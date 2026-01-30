@@ -1,0 +1,39 @@
+# Moltbot personal files
+AGENTS.md
+BOOTSTRAP.md
+HEARTBEAT.md
+IDENTITY.md
+SOUL.md
+TOOLS.md
+USER.md
+MEMORY.md
+memory/
+
+# Generated files
+*.png
+*.svg
+*.skill
+*.mmd
+*.html
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Node.js (if any at root)
+node_modules/
+package-lock.json
+package.json
+
+# Logs
+*.log
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Temporary files
+/tmp/
+*.tmp
