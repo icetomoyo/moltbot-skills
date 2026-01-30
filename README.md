@@ -11,6 +11,13 @@ Render Mermaid diagrams as beautiful SVGs or ASCII art.
 - **Features**: 15+ themes, SVG/ASCII output, auto-installation
 - **Status**: ✅ Ready
 
+### daily-papers-x
+Automatically fetch and summarize trending AI, Embodied AI, and Robotics papers.
+
+- **Path**: `skills/daily-papers-x/`
+- **Features**: Multi-source search (arXiv, Papers With Code, Hugging Face), detailed Markdown reports, ready for automation
+- **Status**: ✅ Ready (First run: 20 papers found!)
+
 ## Installation
 
 ### Method 1: Install from GitHub
