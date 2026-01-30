@@ -1,18 +1,17 @@
 #!/usr/bin/env node
 /**
- * Daily Papers from X (Twitter)
- * Fetches trending AI/Embodied AI/Robotics papers from multiple sources
+ * Daily Papers from X - Concise version for WhatsApp
+ * Generates both full report (saved locally) and summary (sent to WhatsApp)
  */
 
 const fs = require('fs');
 const path = require('path');
 const { execSync } = require('child_process');
-const https = require('https');
 
 const SKILL_DIR = __dirname;
 const WORKSPACE = process.env.WORKSPACE || '/Users/icetomoyo/clawd';
 
-// Configuration - Research Categories
+// Research Categories
 const CATEGORIES = {
   'AI/ML': {
     arxiv: ['cs.AI', 'cs.LG', 'cs.CL'],
@@ -38,8 +37,7 @@ const CATEGORIES = {
 
 const CONFIG = {
   totalMaxResults: 20,
-  hoursBack: 24,
-  minEngagement: 10
+  hoursBack: 24
 };
 
 function ensureDependencies() {
@@ -48,9 +46,7 @@ function ensureDependencies() {
     const pkg = {
       name: "daily-papers-x",
       version: "1.0.0",
-      dependencies: {
-        "axios": "^1.6.0"
-      }
+      dependencies: { "axios": "^1.6.0" }
     };
     fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2));
   }
@@ -71,100 +67,19 @@ function getDateString(date = new Date()) {
   return date.toISOString().split('T')[0];
 }
 
-function getDateRange() {
-  const now = new Date();
-  const yesterday = new Date(now);
-  yesterday.setDate(yesterday.getDate() - 1);
-  
-  // arXiv format: YYYYMMDD
-  const start = yesterday.toISOString().split('T')[0].replace(/-/g, '');
-  const end = now.toISOString().split('T')[0].replace(/-/g, '');
-  
-  return { start, end };
-}
-
 async function fetchWithRetry(url, options = {}, retries = 3) {
   const axios = require('axios');
-  
   for (let i = 0; i < retries; i++) {
     try {
-      const response = await axios.get(url, {
-        timeout: 30000,
-        ...options
-      });
-      return response;
+      return await axios.get(url, { timeout: 30000, ...options });
     } catch (e) {
       if (i === retries - 1) throw e;
-      console.log(`  ⚠️ Retry ${i + 1}/${retries}...`);
       await new Promise(r => setTimeout(r, 2000 * (i + 1)));
     }
   }
 }
 
-async function searchPapers() {
-  const papersByCategory = {};
-  
-  // Search each category separately
-  for (const [categoryName, config] of Object.entries(CATEGORIES)) {
-    console.log(`\n📂 Searching category: ${categoryName}`);
-    papersByCategory[categoryName] = [];
-    
-    // 1. arXiv for this category
-    try {
-      const arxivPapers = await searchArxivByCategory(categoryName, config);
-      papersByCategory[categoryName].push(...arxivPapers);
-      console.log(`  ✅ arXiv: ${arxivPapers.length} papers`);
-    } catch (e) {
-      console.error(`  ⚠️ arXiv failed:`, e.message);
-    }
-    
-    // 2. Papers With Code
-    try {
-      const pwcpPapers = await searchPapersWithCodeByCategory(categoryName, config);
-      papersByCategory[categoryName].push(...pwcpPapers);
-      console.log(`  ✅ Papers With Code: ${pwcpPapers.length} papers`);
-    } catch (e) {
-      console.error(`  ⚠️ Papers With Code failed:`, e.message);
-    }
-    
-    // 3. Hugging Face
-    try {
-      const hfPapers = await searchHuggingFaceByCategory(categoryName, config);
-      papersByCategory[categoryName].push(...hfPapers);
-      console.log(`  ✅ Hugging Face: ${hfPapers.length} papers`);
-    } catch (e) {
-      console.error(`  ⚠️ Hugging Face failed:`, e.message);
-    }
-    
-    // Limit per category
-    papersByCategory[categoryName] = papersByCategory[categoryName]
-      .slice(0, config.maxPapers)
-      .map(p => ({ ...p, researchCategory: categoryName }));
-  }
-  
-  // Combine all papers
-  let allPapers = [];
-  for (const [category, papers] of Object.entries(papersByCategory)) {
-    allPapers.push(...papers);
-  }
-  
-  // Remove duplicates by title
-  const seen = new Set();
-  const unique = allPapers.filter(p => {
-    const key = p.title.toLowerCase().trim();
-    if (seen.has(key)) return false;
-    seen.add(key);
-    return true;
-  });
-  
-  console.log(`\n📊 Category breakdown:`);
-  for (const [category, papers] of Object.entries(papersByCategory)) {
-    console.log(`  ${category}: ${papers.length} papers`);
-  }
-  
-  return unique.slice(0, CONFIG.totalMaxResults);
-}
-
+// Search functions remain the same...
 async function searchArxivByCategory(categoryName, config) {
   const papers = [];
   const arxivCats = config.arxiv || ['cs.AI'];
@@ -172,17 +87,14 @@ async function searchArxivByCategory(categoryName, config) {
   for (const cat of arxivCats) {
     try {
       const url = `http://export.arxiv.org/api/query?search_query=cat:${cat}&start=0&max_results=10&sortBy=submittedDate&sortOrder=descending`;
-      
       const response = await fetchWithRetry(url);
       const entries = parseArxivFeed(response.data);
       
-      // Filter to last 24 hours and by keywords
       const oneDayAgo = new Date();
       oneDayAgo.setDate(oneDayAgo.getDate() - 1);
       
       let recent = entries.filter(e => new Date(e.published) >= oneDayAgo);
       
-      // Filter by keywords if specified
       if (config.keywords && config.keywords.length > 0) {
         recent = recent.filter(e => {
           const text = (e.title + ' ' + e.abstract).toLowerCase();
@@ -205,59 +117,12 @@ async function searchArxivByCategory(categoryName, config) {
   return papers;
 }
 
-async function searchPapersWithCodeByCategory(categoryName, config) {
-  try {
-    const url = 'https://paperswithcode.com/api/v1/papers/';
-    const response = await fetchWithRetry(url, {
-      params: {
-        ordering: '-published',
-        page: 1,
-        items_per_page: 20
-      }
-    });
-    
-    if (!response.data || !Array.isArray(response.data.results)) {
-      return [];
-    }
-    
-    const oneDayAgo = new Date();
-    oneDayAgo.setDate(oneDayAgo.getDate() - 1);
-    
-    let papers = response.data.results
-      .filter(p => p.published && new Date(p.published) >= oneDayAgo);
-    
-    // Filter by keywords
-    if (config.keywords && config.keywords.length > 0) {
-      papers = papers.filter(p => {
-        const text = ((p.title || '') + ' ' + (p.abstract || '')).toLowerCase();
-        return config.keywords.some(kw => text.includes(kw.toLowerCase()));
-      });
-    }
-    
-    return papers.map(p => ({
-      title: p.title || 'Unknown Title',
-      id: p.id || '',
-      abstract: p.abstract ? p.abstract.substring(0, 500) + (p.abstract.length > 500 ? '...' : '') : 'No abstract available',
-      authors: p.authors?.map(a => typeof a === 'string' ? a : a.name).filter(Boolean) || ['Unknown'],
-      category: categoryName,
-      source: 'Papers With Code',
-      url: p.url_abs || p.url_pdf || `https://paperswithcode.com/paper/${p.id}`,
-      published: p.published,
-      engagement: { likes: 0, retweets: 0, score: p.stars || 0 }
-    }));
-  } catch (e) {
-    return [];
-  }
-}
-
 async function searchHuggingFaceByCategory(categoryName, config) {
   try {
     const url = 'https://huggingface.co/api/daily_papers';
     const response = await fetchWithRetry(url);
     
-    if (!Array.isArray(response.data)) {
-      return [];
-    }
+    if (!Array.isArray(response.data)) return [];
     
     const oneDayAgo = new Date();
     oneDayAgo.setDate(oneDayAgo.getDate() - 1);
@@ -267,7 +132,6 @@ async function searchHuggingFaceByCategory(categoryName, config) {
       return !pubDate || pubDate >= oneDayAgo;
     });
     
-    // Filter by keywords
     if (config.keywords && config.keywords.length > 0) {
       papers = papers.filter(p => {
         const paper = p.paper || {};
@@ -287,11 +151,7 @@ async function searchHuggingFaceByCategory(categoryName, config) {
         source: 'Hugging Face',
         url: paper.url || `https://arxiv.org/abs/${paper.id}`,
         published: p.publishedAt || new Date().toISOString(),
-        engagement: { 
-          likes: p.numLikes || 0, 
-          retweets: 0, 
-          score: p.numLikes || 0 
-        }
+        engagement: { likes: p.numLikes || 0, retweets: 0, score: p.numLikes || 0 }
       };
     });
   } catch (e) {
@@ -299,163 +159,8 @@ async function searchHuggingFaceByCategory(categoryName, config) {
   }
 }
 
-// Select featured papers from different dimensions
-function selectFeaturedPapers(papers) {
-  if (!papers || papers.length === 0) {
-    return null;
-  }
-
-  const featured = {
-    mostInteresting: null,
-    mostPopular: null,
-    mostDeep: null,
-    mostValuable: null
-  };
-
-  // Keywords for identifying interesting papers
-  const interestingKeywords = ['breakthrough', 'novel', 'first', 'new paradigm', 'surprising', 'unexpected', 'creative', 'innovative'];
-  
-  // Keywords for identifying deep/theoretical papers
-  const deepKeywords = ['theoretical', 'framework', 'analysis', 'mechanism', 'understanding', 'interpretability', 'mechanistic'];
-  
-  // Keywords for identifying valuable/applied papers  
-  const valuableKeywords = ['application', 'real-world', 'deployment', 'production', 'industry', 'medical', 'clinical', 'financial'];
-
-  // 1. Most Interesting - based on novelty keywords in title/abstract
-  let maxInterestScore = -1;
-  for (const p of papers) {
-    const text = ((p.title || '') + ' ' + (p.abstract || '')).toLowerCase();
-    const score = interestingKeywords.filter(kw => text.includes(kw)).length;
-    if (score > maxInterestScore) {
-      maxInterestScore = score;
-      featured.mostInteresting = p;
-    }
-  }
-  // Fallback if no keywords matched
-  if (!featured.mostInteresting) {
-    featured.mostInteresting = papers[0];
-  }
-
-  // 2. Most Popular - based on engagement score
-  featured.mostPopular = papers.reduce((max, p) => 
-    (p.engagement?.score || 0) > (max?.engagement?.score || 0) ? p : max, papers[0]);
-
-  // 3. Most Deep - based on abstract length and deep keywords
-  let maxDeepScore = -1;
-  for (const p of papers) {
-    const text = ((p.title || '') + ' ' + (p.abstract || '')).toLowerCase();
-    const keywordScore = deepKeywords.filter(kw => text.includes(kw)).length;
-    const lengthScore = Math.min((p.abstract?.length || 0) / 100, 5); // Max 5 points for length
-    const totalScore = keywordScore * 2 + lengthScore;
-    if (totalScore > maxDeepScore) {
-      maxDeepScore = totalScore;
-      featured.mostDeep = p;
-    }
-  }
-  if (!featured.mostDeep) {
-    featured.mostDeep = papers[0];
-  }
-
-  // 4. Most Valuable - based on application keywords and category
-  let maxValueScore = -1;
-  for (const p of papers) {
-    const text = ((p.title || '') + ' ' + (p.abstract || '')).toLowerCase();
-    let score = valuableKeywords.filter(kw => text.includes(kw)).length;
-    // Bonus for biomedical and finance categories
-    if (p.researchCategory?.includes('Biomedical') || p.researchCategory?.includes('Medicine')) score += 2;
-    if (p.researchCategory?.includes('Finance') || p.researchCategory?.includes('Economy')) score += 2;
-    if (score > maxValueScore) {
-      maxValueScore = score;
-      featured.mostValuable = p;
-    }
-  }
-  if (!featured.mostValuable) {
-    featured.mostValuable = papers[papers.length - 1] || papers[0];
-  }
-
-  return featured;
-}
-
-// Generate featured papers section
-function generateFeaturedSection(featured) {
-  if (!featured) return '';
-
-  let md = `
-
----
-
-## ⭐ Featured Papers
-
-> 🎯 **Editor's Picks** - Selected based on novelty, impact, depth, and practical value
-
-`;
-
-  if (featured.mostInteresting) {
-    md += `### 🎨 Most Interesting
-**${featured.mostInteresting.title}**
-
-**Why interesting**: This paper presents novel ideas or surprising findings that challenge conventional thinking.
-
-**Authors**: ${featured.mostInteresting.authors.join(', ')}  
-**Category**: ${featured.mostInteresting.researchCategory}  
-**Link**: [View Paper](${featured.mostInteresting.url})
-
----
-
-`;
-  }
-
-  if (featured.mostPopular) {
-    md += `### 🔥 Most Popular
-**${featured.mostPopular.title}**
-
-**Why popular**: This paper has garnered the most attention and engagement from the research community.
-
-**Authors**: ${featured.mostPopular.authors.join(', ')}  
-**Category**: ${featured.mostPopular.researchCategory}  
-**Engagement**: ${featured.mostPopular.engagement?.likes || 0} likes  
-**Link**: [View Paper](${featured.mostPopular.url})
-
----
-
-`;
-  }
-
-  if (featured.mostDeep) {
-    md += `### 🧠 Most Deep
-**${featured.mostDeep.title}**
-
-**Why deep**: This paper provides thorough theoretical analysis, novel frameworks, or significant insights into fundamental mechanisms.
-
-**Authors**: ${featured.mostDeep.authors.join(', ')}  
-**Category**: ${featured.mostDeep.researchCategory}  
-**Link**: [View Paper](${featured.mostDeep.url})
-
----
-
-`;
-  }
-
-  if (featured.mostValuable) {
-    md += `### 💎 Most Valuable
-**${featured.mostValuable.title}**
-
-**Why valuable**: This paper has high practical applicability, addressing real-world problems in medicine, finance, or industry.
-
-**Authors**: ${featured.mostValuable.authors.join(', ')}  
-**Category**: ${featured.mostValuable.researchCategory}  
-**Link**: [View Paper](${featured.mostValuable.url})
-
-`;
-  }
-
-  return md;
-}
-
 function parseArxivFeed(xml) {
   const entries = [];
-  
-  // Parse entry blocks
   const entryMatches = xml.match(/<entry[^>]*>([\s\S]*?)<\/entry>/g) || [];
   
   for (const entryBlock of entryMatches) {
@@ -465,16 +170,8 @@ function parseArxivFeed(xml) {
       const summary = (entryBlock.match(/<summary>([\s\S]*?)<\/summary>/) || [])[1]?.trim() || '';
       const published = (entryBlock.match(/<published>([\s\S]*?)<\/published>/) || [])[1]?.trim() || '';
       
-      // Get all authors
       const authorMatches = entryBlock.match(/<author[^>]*>[\s\S]*?<name>([\s\S]*?)<\/name>[\s\S]*?<\/author>/g) || [];
-      const authors = authorMatches.map(a => {
-        const name = a.match(/<name>([\s\S]*?)<\/name>/)?.[1]?.trim();
-        return name;
-      }).filter(Boolean);
-      
-      // Get primary category
-      const category = (entryBlock.match(/<arxiv:primary_category[^>]*?term="([^"]+)"/) || [])[1] || 
-                       (entryBlock.match(/<category[^>]*?term="([^"]+)"/) || [])[1] || 'cs.AI';
+      const authors = authorMatches.map(a => a.match(/<name>([\s\S]*?)<\/name>/)?.[1]?.trim()).filter(Boolean);
       
       if (title && id) {
         entries.push({
@@ -482,214 +179,291 @@ function parseArxivFeed(xml) {
           id: id,
           abstract: summary ? summary.substring(0, 500) + (summary.length > 500 ? '...' : '') : 'No abstract available',
           authors: authors.length > 0 ? authors : ['Unknown'],
-          category: category,
           published: published || new Date().toISOString()
         });
       }
-    } catch (e) {
-      console.error('    ⚠️ Failed to parse arXiv entry:', e.message);
-    }
+    } catch (e) {}
   }
   
   return entries;
 }
 
-async function summarizeWithAI(papers) {
-  console.log('🤖 Processing papers...');
+async function searchPapers() {
+  const papersByCategory = {};
   
-  return papers.map(p => ({
-    ...p,
-    summary: p.abstract,
-    keyPoints: [
-      `Source: ${p.source}`,
-      `Category: ${p.category}`,
-      `Published: ${new Date(p.published).toLocaleDateString()}`
-    ]
-  }));
+  for (const [categoryName, config] of Object.entries(CATEGORIES)) {
+    console.log(`\n📂 Searching: ${categoryName}`);
+    papersByCategory[categoryName] = [];
+    
+    try {
+      const arxivPapers = await searchArxivByCategory(categoryName, config);
+      papersByCategory[categoryName].push(...arxivPapers);
+      console.log(`  ✅ arXiv: ${arxivPapers.length}`);
+    } catch (e) {}
+    
+    try {
+      const hfPapers = await searchHuggingFaceByCategory(categoryName, config);
+      papersByCategory[categoryName].push(...hfPapers);
+      console.log(`  ✅ Hugging Face: ${hfPapers.length}`);
+    } catch (e) {}
+    
+    papersByCategory[categoryName] = papersByCategory[categoryName]
+      .slice(0, config.maxPapers)
+      .map(p => ({ ...p, researchCategory: categoryName }));
+  }
+  
+  let allPapers = [];
+  for (const papers of Object.values(papersByCategory)) {
+    allPapers.push(...papers);
+  }
+  
+  const seen = new Set();
+  const unique = allPapers.filter(p => {
+    const key = p.title.toLowerCase().trim();
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+  
+  console.log(`\n📊 Category breakdown:`);
+  for (const [cat, papers] of Object.entries(papersByCategory)) {
+    console.log(`  ${cat}: ${papers.length}`);
+  }
+  
+  return unique.slice(0, CONFIG.totalMaxResults);
 }
 
-function generateMarkdown(papers, date) {
+// Select featured papers
+function selectFeaturedPapers(papers) {
+  if (!papers || papers.length === 0) return null;
+
+  const interestingKeywords = ['breakthrough', 'novel', 'first', 'new paradigm', 'surprising', 'unexpected', 'creative', 'innovative'];
+  const deepKeywords = ['theoretical', 'framework', 'analysis', 'mechanism', 'understanding', 'interpretability'];
+  const valuableKeywords = ['application', 'real-world', 'deployment', 'medical', 'clinical', 'financial'];
+
+  const featured = {
+    mostInteresting: null,
+    mostPopular: null,
+    mostDeep: null,
+    mostValuable: null
+  };
+
+  // Most Interesting
+  let maxScore = -1;
+  for (const p of papers) {
+    const text = ((p.title || '') + ' ' + (p.abstract || '')).toLowerCase();
+    const score = interestingKeywords.filter(kw => text.includes(kw)).length;
+    if (score > maxScore) {
+      maxScore = score;
+      featured.mostInteresting = p;
+    }
+  }
+  if (!featured.mostInteresting) featured.mostInteresting = papers[0];
+
+  // Most Popular
+  featured.mostPopular = papers.reduce((max, p) => 
+    (p.engagement?.score || 0) > (max?.engagement?.score || 0) ? p : max, papers[0]);
+
+  // Most Deep
+  maxScore = -1;
+  for (const p of papers) {
+    const text = ((p.title || '') + ' ' + (p.abstract || '')).toLowerCase();
+    const keywordScore = deepKeywords.filter(kw => text.includes(kw)).length;
+    const lengthScore = Math.min((p.abstract?.length || 0) / 100, 5);
+    const totalScore = keywordScore * 2 + lengthScore;
+    if (totalScore > maxScore) {
+      maxScore = totalScore;
+      featured.mostDeep = p;
+    }
+  }
+  if (!featured.mostDeep) featured.mostDeep = papers[0];
+
+  // Most Valuable
+  maxScore = -1;
+  for (const p of papers) {
+    const text = ((p.title || '') + ' ' + (p.abstract || '')).toLowerCase();
+    let score = valuableKeywords.filter(kw => text.includes(kw)).length;
+    if (p.researchCategory?.includes('Biomedical')) score += 2;
+    if (p.researchCategory?.includes('Finance')) score += 2;
+    if (score > maxScore) {
+      maxScore = score;
+      featured.mostValuable = p;
+    }
+  }
+  if (!featured.mostValuable) featured.mostValuable = papers[papers.length - 1] || papers[0];
+
+  return featured;
+}
+
+// Generate full report (saved locally)
+function generateFullReport(papers, featured, date) {
   const dateStr = getDateString(new Date(date));
   
-  // Group by research category
   const byCategory = {};
   papers.forEach(p => {
     const cat = p.researchCategory || 'Other';
     if (!byCategory[cat]) byCategory[cat] = [];
     byCategory[cat].push(p);
   });
-  
-  // Source stats
-  const sourceStats = papers.reduce((acc, p) => {
-    acc[p.source] = (acc[p.source] || 0) + 1;
-    return acc;
-  }, {});
-  
+
   let md = `# Daily AI Papers - ${dateStr}
 
-> 🎯 **Research Areas**: 
-> • AI/ML • Robotics/Embodied AI • AI+Economics/Finance • AI+Biomedical/Medicine  
-> 📊 **Sources**: arXiv, Papers With Code, Hugging Face  
-> ⏰ **Time Range**: Last 24 hours  
-
----
+> 🎯 Research Areas: AI/ML • Robotics/Embodied AI • AI+Finance • AI+Biomedical  
+> 📊 Sources: arXiv, Hugging Face  
+> ⏰ Time Range: Last 24 hours  
 
 ## 📈 Summary
 
-Found **${papers.length}** trending papers across **${Object.keys(byCategory).length}** research areas.
-
-### By Category
+Found **${papers.length}** papers across **${Object.keys(byCategory).length}** areas.
 
 | Research Area | Papers |
 |---------------|--------|
 `;
 
-  Object.entries(byCategory).forEach(([category, papers]) => {
-    md += `| ${category} | ${papers.length} |\n`;
+  Object.entries(byCategory).forEach(([cat, ps]) => {
+    md += `| ${cat} | ${ps.length} |\n`;
   });
 
-  md += `
-### By Source
-
-| Source | Count |
-|--------|-------|
-`;
-
-  Object.entries(sourceStats).forEach(([source, count]) => {
-    md += `| ${source} | ${count} |\n`;
-  });
-
-  // Generate sections by category
-  for (const [category, categoryPapers] of Object.entries(byCategory)) {
-    md += `
-
----
-
-## 🔬 ${category}
-
-*${categoryPapers.length} papers*
-
-`;
-
-    categoryPapers.forEach((p, i) => {
-      md += `### ${i + 1}. ${p.title}
-
-**Authors**: ${p.authors.join(', ')}  
-**Source**: ${p.source}  
-**Published**: ${new Date(p.published).toLocaleDateString()}
-
-#### 📝 Abstract
-
-${p.summary || p.abstract}
-
-#### 🔗 Links
-
-- [Paper URL](${p.url})
-`;
-
-      if (p.pdfUrl) {
-        md += `- [PDF](${p.pdfUrl})\n`;
-      }
-
-      md += `
-#### 📊 Engagement
-
-- Likes: ${p.engagement?.likes || 0}
-- Score: ${p.engagement?.score || 0}
-
----
-
-`;
+  // Full papers by category
+  for (const [cat, ps] of Object.entries(byCategory)) {
+    md += `\n---\n\n## 🔬 ${cat}\n\n`;
+    ps.forEach((p, i) => {
+      md += `### ${i + 1}. ${p.title}\n\n`;
+      md += `**Authors**: ${p.authors.join(', ')}  \n`;
+      md += `**Source**: ${p.source}  \n`;
+      md += `**Published**: ${new Date(p.published).toLocaleDateString()}\n\n`;
+      md += `**Abstract**: ${p.abstract}\n\n`;
+      md += `🔗 [Paper URL](${p.url})\n\n---\n\n`;
     });
   }
 
-  // Add Featured Papers section
-  const featured = selectFeaturedPapers(papers);
-  md += generateFeaturedSection(featured);
-
-  // Add research categories footer
-  try {
-    const categoryList = Object.entries(CATEGORIES).map(([name, config]) => {
-      const keywords = config.keywords || [];
-      return `- **${name}**: ${keywords.slice(0, 3).join(', ')}...`;
-    }).join('\n');
+  // Featured papers
+  if (featured) {
+    md += `\n---\n\n## ⭐ Featured Papers\n\n`;
     
-    md += `
-## 🏷️ Research Categories
-
-${categoryList}
-
----
-
-*Generated by daily-papers-x skill for Moltbot*  
-*Last updated: ${new Date().toLocaleString()}*
-`;
-  } catch (e) {
-    md += `
----
-
-*Generated by daily-papers-x skill for Moltbot*  
-*Last updated: ${new Date().toLocaleString()}*
-`;
+    if (featured.mostInteresting) {
+      md += `### 🎨 Most Interesting: ${featured.mostInteresting.title}\n\n`;
+      md += `${featured.mostInteresting.abstract}\n\n`;
+      md += `🔗 ${featured.mostInteresting.url}\n\n---\n\n`;
+    }
+    
+    if (featured.mostPopular) {
+      md += `### 🔥 Most Popular: ${featured.mostPopular.title}\n\n`;
+      md += `${featured.mostPopular.abstract}\n\n`;
+      md += `🔗 ${featured.mostPopular.url}\n\n---\n\n`;
+    }
+    
+    if (featured.mostDeep) {
+      md += `### 🧠 Most Deep: ${featured.mostDeep.title}\n\n`;
+      md += `${featured.mostDeep.abstract}\n\n`;
+      md += `🔗 ${featured.mostDeep.url}\n\n---\n\n`;
+    }
+    
+    if (featured.mostValuable) {
+      md += `### 💎 Most Valuable: ${featured.mostValuable.title}\n\n`;
+      md += `${featured.mostValuable.abstract}\n\n`;
+      md += `🔗 ${featured.mostValuable.url}\n\n`;
+    }
   }
 
+  md += `\n---\n\n*Generated by daily-papers-x skill*  \n*Last updated: ${new Date().toLocaleString()}*\n`;
+
   return md;
+}
+
+// Generate WhatsApp summary
+function generateWhatsAppSummary(papers, featured) {
+  let msg = `📚 Daily AI Papers - ${getDateString()}\n\n`;
+  msg += `📊 Found ${papers.length} papers\n\n`;
+
+  // All papers list
+  msg += `📋 All Papers:\n`;
+  papers.forEach((p, i) => {
+    msg += `${i + 1}. ${p.title}\n   🔗 ${p.url}\n`;
+  });
+
+  // Featured papers with details
+  if (featured) {
+    msg += `\n---\n\n⭐ Featured Papers:\n\n`;
+
+    if (featured.mostInteresting) {
+      msg += `🎨 Most Interesting:\n`;
+      msg += `${featured.mostInteresting.title}\n`;
+      msg += `${featured.mostInteresting.abstract.substring(0, 300)}...\n`;
+      msg += `🔗 ${featured.mostInteresting.url}\n\n`;
+    }
+
+    if (featured.mostPopular) {
+      msg += `🔥 Most Popular:\n`;
+      msg += `${featured.mostPopular.title}\n`;
+      msg += `${featured.mostPopular.abstract.substring(0, 300)}...\n`;
+      msg += `🔗 ${featured.mostPopular.url}\n\n`;
+    }
+
+    if (featured.mostDeep) {
+      msg += `🧠 Most Deep:\n`;
+      msg += `${featured.mostDeep.title}\n`;
+      msg += `${featured.mostDeep.abstract.substring(0, 300)}...\n`;
+      msg += `🔗 ${featured.mostDeep.url}\n\n`;
+    }
+
+    if (featured.mostValuable) {
+      msg += `💎 Most Valuable:\n`;
+      msg += `${featured.mostValuable.title}\n`;
+      msg += `${featured.mostValuable.abstract.substring(0, 300)}...\n`;
+      msg += `🔗 ${featured.mostValuable.url}\n`;
+    }
+  }
+
+  msg += `\n📄 Full report saved to: memory/papers-${getDateString()}.md\n`;
+
+  return msg;
 }
 
 async function main() {
   try {
     ensureDependencies();
     
-    console.log('🚀 Starting daily papers search...');
-    console.log(`📅 Looking back ${CONFIG.hoursBack} hours`);
-    console.log('');
+    console.log('🚀 Starting daily papers search...\n');
     
-    // Search for papers
     const papers = await searchPapers();
-    console.log('');
-    console.log(`📚 Total unique papers: ${papers.length}`);
+    console.log(`\n📚 Total: ${papers.length} papers`);
     
     if (papers.length === 0) {
-      console.log('⚠️ No papers found today');
+      console.log('⚠️ No papers found');
       process.exit(0);
     }
     
-    // Generate summaries
-    const enrichedPapers = await summarizeWithAI(papers);
-    
-    // Generate markdown
+    const featured = selectFeaturedPapers(papers);
     const date = new Date();
-    const markdown = generateMarkdown(enrichedPapers, date);
     
-    // Save to file
-    const filename = `papers-${getDateString(date)}.md`;
+    // Generate full report (saved locally)
+    const fullReport = generateFullReport(papers, featured, date);
     const memoryDir = path.join(WORKSPACE, 'memory');
-    const filepath = path.join(memoryDir, filename);
-    
     if (!fs.existsSync(memoryDir)) {
       fs.mkdirSync(memoryDir, { recursive: true });
     }
     
-    fs.writeFileSync(filepath, markdown, 'utf8');
+    const mdPath = path.join(memoryDir, `papers-${getDateString(date)}.md`);
+    fs.writeFileSync(mdPath, fullReport, 'utf8');
+    console.log(`✅ Full report saved: ${mdPath}`);
     
-    console.log('');
-    console.log('✅ Report generated successfully!');
-    console.log(`📄 File: ${filepath}`);
-    console.log(`📊 Papers: ${papers.length}`);
-    console.log('');
-    console.log('📱 Summary:');
-    console.log(`Found ${papers.length} trending AI papers today!`);
-    console.log(`Report saved to: memory/${filename}`);
-    console.log('');
-    console.log('Top papers:');
-    enrichedPapers.slice(0, 5).forEach((p, i) => {
-      const shortTitle = p.title.length > 50 ? p.title.substring(0, 50) + '...' : p.title;
-      console.log(`  ${i + 1}. [${p.source}] ${shortTitle}`);
-    });
+    // Generate WhatsApp summary (output to console for message tool)
+    const whatsappSummary = generateWhatsAppSummary(papers, featured);
+    
+    // Save WhatsApp message to file for easy sending
+    const msgPath = path.join(memoryDir, `papers-${getDateString(date)}-summary.txt`);
+    fs.writeFileSync(msgPath, whatsappSummary, 'utf8');
+    console.log(`✅ WhatsApp summary saved: ${msgPath}`);
+    
+    // Output the summary (this will be captured and sent)
+    console.log('\n📱 WhatsApp Message:\n');
+    console.log('---WHATSAPP_MESSAGE_START---');
+    console.log(whatsappSummary);
+    console.log('---WHATSAPP_MESSAGE_END---');
     
   } catch (error) {
     console.error('❌ Error:', error.message);
-    console.error(error.stack);
     process.exit(1);
   }
 }
