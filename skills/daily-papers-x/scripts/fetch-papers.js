@@ -299,6 +299,159 @@ async function searchHuggingFaceByCategory(categoryName, config) {
   }
 }
 
+// Select featured papers from different dimensions
+function selectFeaturedPapers(papers) {
+  if (!papers || papers.length === 0) {
+    return null;
+  }
+
+  const featured = {
+    mostInteresting: null,
+    mostPopular: null,
+    mostDeep: null,
+    mostValuable: null
+  };
+
+  // Keywords for identifying interesting papers
+  const interestingKeywords = ['breakthrough', 'novel', 'first', 'new paradigm', 'surprising', 'unexpected', 'creative', 'innovative'];
+  
+  // Keywords for identifying deep/theoretical papers
+  const deepKeywords = ['theoretical', 'framework', 'analysis', 'mechanism', 'understanding', 'interpretability', 'mechanistic'];
+  
+  // Keywords for identifying valuable/applied papers  
+  const valuableKeywords = ['application', 'real-world', 'deployment', 'production', 'industry', 'medical', 'clinical', 'financial'];
+
+  // 1. Most Interesting - based on novelty keywords in title/abstract
+  let maxInterestScore = -1;
+  for (const p of papers) {
+    const text = ((p.title || '') + ' ' + (p.abstract || '')).toLowerCase();
+    const score = interestingKeywords.filter(kw => text.includes(kw)).length;
+    if (score > maxInterestScore) {
+      maxInterestScore = score;
+      featured.mostInteresting = p;
+    }
+  }
+  // Fallback if no keywords matched
+  if (!featured.mostInteresting) {
+    featured.mostInteresting = papers[0];
+  }
+
+  // 2. Most Popular - based on engagement score
+  featured.mostPopular = papers.reduce((max, p) => 
+    (p.engagement?.score || 0) > (max?.engagement?.score || 0) ? p : max, papers[0]);
+
+  // 3. Most Deep - based on abstract length and deep keywords
+  let maxDeepScore = -1;
+  for (const p of papers) {
+    const text = ((p.title || '') + ' ' + (p.abstract || '')).toLowerCase();
+    const keywordScore = deepKeywords.filter(kw => text.includes(kw)).length;
+    const lengthScore = Math.min((p.abstract?.length || 0) / 100, 5); // Max 5 points for length
+    const totalScore = keywordScore * 2 + lengthScore;
+    if (totalScore > maxDeepScore) {
+      maxDeepScore = totalScore;
+      featured.mostDeep = p;
+    }
+  }
+  if (!featured.mostDeep) {
+    featured.mostDeep = papers[0];
+  }
+
+  // 4. Most Valuable - based on application keywords and category
+  let maxValueScore = -1;
+  for (const p of papers) {
+    const text = ((p.title || '') + ' ' + (p.abstract || '')).toLowerCase();
+    let score = valuableKeywords.filter(kw => text.includes(kw)).length;
+    // Bonus for biomedical and finance categories
+    if (p.researchCategory?.includes('Biomedical') || p.researchCategory?.includes('Medicine')) score += 2;
+    if (p.researchCategory?.includes('Finance') || p.researchCategory?.includes('Economy')) score += 2;
+    if (score > maxValueScore) {
+      maxValueScore = score;
+      featured.mostValuable = p;
+    }
+  }
+  if (!featured.mostValuable) {
+    featured.mostValuable = papers[papers.length - 1] || papers[0];
+  }
+
+  return featured;
+}
+
+// Generate featured papers section
+function generateFeaturedSection(featured) {
+  if (!featured) return '';
+
+  let md = `
+
+---
+
+## ⭐ Featured Papers
+
+> 🎯 **Editor's Picks** - Selected based on novelty, impact, depth, and practical value
+
+`;
+
+  if (featured.mostInteresting) {
+    md += `### 🎨 Most Interesting
+**${featured.mostInteresting.title}**
+
+**Why interesting**: This paper presents novel ideas or surprising findings that challenge conventional thinking.
+
+**Authors**: ${featured.mostInteresting.authors.join(', ')}  
+**Category**: ${featured.mostInteresting.researchCategory}  
+**Link**: [View Paper](${featured.mostInteresting.url})
+
+---
+
+`;
+  }
+
+  if (featured.mostPopular) {
+    md += `### 🔥 Most Popular
+**${featured.mostPopular.title}**
+
+**Why popular**: This paper has garnered the most attention and engagement from the research community.
+
+**Authors**: ${featured.mostPopular.authors.join(', ')}  
+**Category**: ${featured.mostPopular.researchCategory}  
+**Engagement**: ${featured.mostPopular.engagement?.likes || 0} likes  
+**Link**: [View Paper](${featured.mostPopular.url})
+
+---
+
+`;
+  }
+
+  if (featured.mostDeep) {
+    md += `### 🧠 Most Deep
+**${featured.mostDeep.title}**
+
+**Why deep**: This paper provides thorough theoretical analysis, novel frameworks, or significant insights into fundamental mechanisms.
+
+**Authors**: ${featured.mostDeep.authors.join(', ')}  
+**Category**: ${featured.mostDeep.researchCategory}  
+**Link**: [View Paper](${featured.mostDeep.url})
+
+---
+
+`;
+  }
+
+  if (featured.mostValuable) {
+    md += `### 💎 Most Valuable
+**${featured.mostValuable.title}**
+
+**Why valuable**: This paper has high practical applicability, addressing real-world problems in medicine, finance, or industry.
+
+**Authors**: ${featured.mostValuable.authors.join(', ')}  
+**Category**: ${featured.mostValuable.researchCategory}  
+**Link**: [View Paper](${featured.mostValuable.url})
+
+`;
+  }
+
+  return md;
+}
+
 function parseArxivFeed(xml) {
   const entries = [];
   
@@ -449,6 +602,10 @@ ${p.summary || p.abstract}
 `;
     });
   }
+
+  // Add Featured Papers section
+  const featured = selectFeaturedPapers(papers);
+  md += generateFeaturedSection(featured);
 
   // Add research categories footer
   try {
