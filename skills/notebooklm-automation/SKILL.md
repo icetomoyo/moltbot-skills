@@ -52,6 +52,9 @@ Then in Chrome:
 Use the `browser` tool with `profile="chrome"`:
 
 ```javascript
+// 0. Navigate to NotebookLM first
+browser action=navigate profile=chrome targetUrl="https://notebooklm.google.com"
+
 // 1. Check current page
 browser action=snapshot profile=chrome
 
@@ -74,6 +77,18 @@ browser action=act profile=chrome request={"kind":"click","ref":"e46"}  // Prese
 ```
 
 ## Detailed Workflow
+
+### Phase 0: Navigate to NotebookLM
+
+**Ensure Chrome extension is attached (badge shows ON), then navigate:**
+```javascript
+browser action=navigate profile=chrome targetUrl="https://notebooklm.google.com"
+```
+
+**Wait for page load:**
+```javascript
+await sleep(3000)
+```
 
 ### Phase 1: Create Notebook
 
@@ -218,6 +233,11 @@ browser action=navigate profile=chrome targetUrl="https://notebooklm.google.com"
 
 async function automateNotebookLM(paperUrl) {
   console.log(`🚀 Starting NotebookLM automation for: ${paperUrl}`);
+  
+  // Step 0: Navigate to NotebookLM
+  console.log('🌐 Navigating to NotebookLM...');
+  await browser({ action: 'navigate', profile: 'chrome', targetUrl: 'https://notebooklm.google.com' });
+  await sleep(3000); // Wait for page to load
   
   // Step 1: Get snapshot and find New Notebook button
   console.log('➕ Creating new notebook...');
