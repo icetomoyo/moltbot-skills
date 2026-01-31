@@ -41,3 +41,12 @@ package.json
 # Chrome profiles
 .chrome-profile/
 .chrome-profile-notebooklm/
+
+# Archive (temporary/test files)
+archive/
+
+# Canvas output
+canvas/
+
+# Content outputs
+content/
