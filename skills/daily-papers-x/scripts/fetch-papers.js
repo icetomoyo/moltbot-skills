@@ -37,7 +37,9 @@ const CATEGORIES = {
 
 const CONFIG = {
   totalMaxResults: 20,
-  hoursBack: 24
+  hoursBack: parseInt(process.env.HOURS_BACK || '24', 10),
+  minPapersThreshold: 3,  // 如果少于3篇，自动扩大搜索范围
+  fallbackHoursBack: 48   // 回退搜索范围
 };
 
 function ensureDependencies() {
@@ -80,20 +82,20 @@ async function fetchWithRetry(url, options = {}, retries = 3) {
 }
 
 // Search functions remain the same...
-async function searchArxivByCategory(categoryName, config) {
+async function searchArxivByCategory(categoryName, config, hoursBack = 24) {
   const papers = [];
   const arxivCats = config.arxiv || ['cs.AI'];
   
   for (const cat of arxivCats) {
     try {
-      const url = `http://export.arxiv.org/api/query?search_query=cat:${cat}&start=0&max_results=10&sortBy=submittedDate&sortOrder=descending`;
+      const url = `http://export.arxiv.org/api/query?search_query=cat:${cat}&start=0&max_results=${hoursBack > 24 ? 20 : 10}&sortBy=submittedDate&sortOrder=descending`;
       const response = await fetchWithRetry(url);
       const entries = parseArxivFeed(response.data);
       
-      const oneDayAgo = new Date();
-      oneDayAgo.setDate(oneDayAgo.getDate() - 1);
+      const cutoffTime = new Date();
+      cutoffTime.setHours(cutoffTime.getHours() - hoursBack);
       
-      let recent = entries.filter(e => new Date(e.published) >= oneDayAgo);
+      let recent = entries.filter(e => new Date(e.published) >= cutoffTime);
       
       if (config.keywords && config.keywords.length > 0) {
         recent = recent.filter(e => {
@@ -105,7 +107,7 @@ async function searchArxivByCategory(categoryName, config) {
       papers.push(...recent.map(p => ({
         ...p,
         source: 'arXiv',
-        url: p.id,
+        url: p.id.replace('/abs/', '/pdf/'),
         category: cat,
         engagement: { likes: 0, retweets: 0, score: 0 }
       })));
@@ -117,19 +119,19 @@ async function searchArxivByCategory(categoryName, config) {
   return papers;
 }
 
-async function searchHuggingFaceByCategory(categoryName, config) {
+async function searchHuggingFaceByCategory(categoryName, config, hoursBack = 24) {
   try {
     const url = 'https://huggingface.co/api/daily_papers';
     const response = await fetchWithRetry(url);
     
     if (!Array.isArray(response.data)) return [];
     
-    const oneDayAgo = new Date();
-    oneDayAgo.setDate(oneDayAgo.getDate() - 1);
+    const cutoffTime = new Date();
+    cutoffTime.setHours(cutoffTime.getHours() - hoursBack);
     
     let papers = response.data.filter(p => {
       const pubDate = p.publishedAt ? new Date(p.publishedAt) : null;
-      return !pubDate || pubDate >= oneDayAgo;
+      return !pubDate || pubDate >= cutoffTime;
     });
     
     if (config.keywords && config.keywords.length > 0) {
@@ -188,21 +190,21 @@ function parseArxivFeed(xml) {
   return entries;
 }
 
-async function searchPapers() {
+async function searchPapers(hoursBack = 24) {
   const papersByCategory = {};
   
   for (const [categoryName, config] of Object.entries(CATEGORIES)) {
-    console.log(`\n📂 Searching: ${categoryName}`);
+    console.log(`\n📂 Searching: ${categoryName} (${hoursBack}h)`);
     papersByCategory[categoryName] = [];
     
     try {
-      const arxivPapers = await searchArxivByCategory(categoryName, config);
+      const arxivPapers = await searchArxivByCategory(categoryName, config, hoursBack);
       papersByCategory[categoryName].push(...arxivPapers);
       console.log(`  ✅ arXiv: ${arxivPapers.length}`);
     } catch (e) {}
     
     try {
-      const hfPapers = await searchHuggingFaceByCategory(categoryName, config);
+      const hfPapers = await searchHuggingFaceByCategory(categoryName, config, hoursBack);
       papersByCategory[categoryName].push(...hfPapers);
       console.log(`  ✅ Hugging Face: ${hfPapers.length}`);
     } catch (e) {}
@@ -425,12 +427,38 @@ async function main() {
     ensureDependencies();
     
     console.log('🚀 Starting daily papers search...\n');
+    console.log(`⏰ Search range: ${CONFIG.hoursBack} hours`);
     
-    const papers = await searchPapers();
+    // First attempt with default hoursBack
+    let papers = await searchPapers(CONFIG.hoursBack);
     console.log(`\n📚 Total: ${papers.length} papers`);
     
+    // If not enough papers and not already using fallback, try wider range
+    if (papers.length < CONFIG.minPapersThreshold && CONFIG.hoursBack < CONFIG.fallbackHoursBack) {
+      console.log(`\n⚠️ Only ${papers.length} papers found (threshold: ${CONFIG.minPapersThreshold})`);
+      console.log(`🔄 Expanding search to ${CONFIG.fallbackHoursBack} hours...\n`);
+      
+      papers = await searchPapers(CONFIG.fallbackHoursBack);
+      console.log(`\n📚 Total after expansion: ${papers.length} papers`);
+    }
+    
     if (papers.length === 0) {
-      console.log('⚠️ No papers found');
+      console.log('\n⚠️ No papers found');
+      
+      // Save empty result marker
+      const memoryDir = path.join(WORKSPACE, 'memory');
+      if (!fs.existsSync(memoryDir)) {
+        fs.mkdirSync(memoryDir, { recursive: true });
+      }
+      const emptyMarker = path.join(memoryDir, `papers-${getDateString()}-empty.txt`);
+      fs.writeFileSync(emptyMarker, `No papers found on ${getDateString()}\nSearch range: ${CONFIG.fallbackHoursBack} hours`, 'utf8');
+      
+      // Output for WhatsApp
+      console.log('\n📱 WhatsApp Message:');
+      console.log('---WHATSAPP_MESSAGE_START---');
+      console.log(`📚 Daily AI Papers - ${getDateString()}\n\n🔍 搜索了最近 ${CONFIG.fallbackHoursBack} 小时的论文\n\n⚠️ 暂无新论文发布\n\n明天再试试！ 📖`);
+      console.log('---WHATSAPP_MESSAGE_END---');
+      
       process.exit(0);
     }
     
