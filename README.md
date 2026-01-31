@@ -1,6 +1,6 @@
-# Moltbot Skills Collection
+# OpenClaw Skills Collection
 
-A curated collection of custom skills for Moltbot.
+A curated collection of custom skills for OpenClaw.
 
 ## Skills
 
@@ -23,10 +23,10 @@ Automatically fetch and summarize trending AI, Embodied AI, and Robotics papers.
 ### Method 1: Install from GitHub
 ```bash
 # Install specific skill
-moltbot skills install https://github.com/YOUR_USERNAME/moltbot-skills/tree/main/skills/beautiful-mermaid
+openclaw skills install https://github.com/YOUR_USERNAME/openclaw-skills/tree/main/skills/beautiful-mermaid
 
 # Or download .skill file and install
-moltbot skills install ./beautiful-mermaid.skill
+openclaw skills install ./beautiful-mermaid.skill
 ```
 
 ### Method 2: Manual Copy
@@ -41,7 +41,7 @@ See [SKILL_TEMPLATE.md](SKILL_TEMPLATE.md) for creating your own skills.
 ## Project Structure
 
 ```
-moltbot-skills/
+openclaw-skills/
 ├── skills/                    # All skills
 │   ├── beautiful-mermaid/    # Skill folder
 │   │   ├── SKILL.md          # Skill documentation (required)

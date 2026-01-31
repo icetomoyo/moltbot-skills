@@ -2,7 +2,7 @@
 name: beautiful-mermaid
 description: Render Mermaid diagrams as beautiful SVGs or ASCII art. Use when users want to create, visualize, or convert Mermaid diagrams to professional-looking graphics or terminal-friendly ASCII output. Supports flowcharts, state, sequence, class, ER diagrams with 15+ themes.
 homepage: https://github.com/lukilabs/beautiful-mermaid
-metadata: {"moltbot":{"emoji":"🧜","requires":{"bins":["node"]},"install":[{"id":"npm","kind":"npm","package":"beautiful-mermaid","bins":["node"],"label":"Auto-installs on first run"}]}}
+metadata: {"openclaw":{"emoji":"🧜","requires":{"bins":["node"]},"install":[{"id":"npm","kind":"npm","package":"beautiful-mermaid","bins":["node"],"label":"Auto-installs on first run"}]}}
 ---
 
 # Beautiful Mermaid

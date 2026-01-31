@@ -1,12 +1,12 @@
 # Skill Template
 
-Use this template to create new Moltbot skills.
+Use this template to create new OpenClaw skills.
 
 ## Quick Start
 
 ```bash
 # Run the skill creator script
-python3 /path/to/moltbot/skills/skill-creator/scripts/init_skill.py my-skill --path ./skills
+python3 /path/to/openclaw/skills/skill-creator/scripts/init_skill.py my-skill --path ./skills
 ```
 
 ## Skill Structure
@@ -75,7 +75,7 @@ Any important notes or limitations.
 
 ```bash
 # Package the skill
-python3 /path/to/moltbot/skills/skill-creator/scripts/package_skill.py ./skills/my-skill ./releases
+python3 /path/to/openclaw/skills/skill-creator/scripts/package_skill.py ./skills/my-skill ./releases
 
 # Or use our publish script
 ./scripts/publish-skill.sh my-skill

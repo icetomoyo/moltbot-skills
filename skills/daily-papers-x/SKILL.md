@@ -2,7 +2,7 @@
 name: daily-papers-x
 description: Automatically fetch and summarize trending AI, Embodied AI, Robotics papers from arXiv and Hugging Face. Generates daily reports with featured paper selections (most interesting, popular, deep, valuable). Use when users want to track latest AI research, create daily paper digests, or monitor research trends.
 homepage: https://arxiv.org/
-metadata: {"moltbot":{"emoji":"📚","requires":{"bins":["node"]},"install":[{"id":"npm","kind":"npm","package":"axios","bins":["node"],"label":"Auto-installs axios on first run"}]}}
+metadata: {"openclaw":{"emoji":"📚","requires":{"bins":["node"]},"install":[{"id":"npm","kind":"npm","package":"axios","bins":["node"],"label":"Auto-installs axios on first run"}]}}
 ---
 
 # Daily Papers X
