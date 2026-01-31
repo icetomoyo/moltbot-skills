@@ -247,7 +247,8 @@ function selectFeaturedPapers(papers) {
     mostInteresting: null,
     mostPopular: null,
     mostDeep: null,
-    mostValuable: null
+    mostValuable: null,
+    mostRecommended: null
   };
 
   // Most Interesting
@@ -293,6 +294,60 @@ function selectFeaturedPapers(papers) {
     }
   }
   if (!featured.mostValuable) featured.mostValuable = papers[papers.length - 1] || papers[0];
+
+  // Most Recommended -综合考虑创新性、影响力和实用价值
+  let bestScore = -1;
+  let bestReason = '';
+  
+  for (const p of papers) {
+    const text = ((p.title || '') + ' ' + (p.abstract || '')).toLowerCase();
+    
+    // 计算各项得分
+    const noveltyScore = interestingKeywords.filter(kw => text.includes(kw)).length * 3;
+    const impactScore = (p.engagement?.score || 0) * 2;
+    const depthScore = deepKeywords.filter(kw => text.includes(kw)).length * 2;
+    const practicalScore = valuableKeywords.filter(kw => text.includes(kw)).length * 2.5;
+    
+    // 额外加分项
+    let bonusScore = 0;
+    let reasons = [];
+    
+    if (text.includes('llm') || text.includes('large language model') || text.includes('transformer')) {
+      bonusScore += 2;
+      reasons.push('LLM架构创新');
+    }
+    if (text.includes('attention') || text.includes('efficient')) {
+      bonusScore += 1.5;
+      reasons.push('注意力机制优化');
+    }
+    if (text.includes('long context') || text.includes('scaling')) {
+      bonusScore += 1.5;
+      reasons.push('长上下文/规模化');
+    }
+    if (text.includes('real-world') || text.includes('deployment') || text.includes('application')) {
+      bonusScore += 2;
+      reasons.push('实际应用价值');
+    }
+    
+    const totalScore = noveltyScore + impactScore + depthScore + practicalScore + bonusScore;
+    
+    if (totalScore > bestScore) {
+      bestScore = totalScore;
+      featured.mostRecommended = {
+        ...p,
+        recommendScore: totalScore,
+        recommendReasons: reasons.length > 0 ? reasons : ['综合评分最高']
+      };
+    }
+  }
+  
+  if (!featured.mostRecommended) {
+    featured.mostRecommended = {
+      ...papers[0],
+      recommendScore: 0,
+      recommendReasons: ['默认推荐']
+    };
+  }
 
   return featured;
 }
@@ -343,6 +398,14 @@ Found **${papers.length}** papers across **${Object.keys(byCategory).length}** a
   if (featured) {
     md += `\n---\n\n## ⭐ Featured Papers\n\n`;
     
+    // Most Recommended
+    if (featured.mostRecommended) {
+      md += `### 🏆 Most Recommended: ${featured.mostRecommended.title}\n\n`;
+      md += `**推荐理由:** ${featured.mostRecommended.recommendReasons.join(', ')}\n\n`;
+      md += `${featured.mostRecommended.abstract}\n\n`;
+      md += `🔗 ${featured.mostRecommended.url}\n\n---\n\n`;
+    }
+    
     if (featured.mostInteresting) {
       md += `### 🎨 Most Interesting: ${featured.mostInteresting.title}\n\n`;
       md += `${featured.mostInteresting.abstract}\n\n`;
@@ -377,6 +440,21 @@ Found **${papers.length}** papers across **${Object.keys(byCategory).length}** a
 function generateWhatsAppSummary(papers, featured) {
   let msg = `📚 Daily AI Papers - ${getDateString()}\n\n`;
   msg += `📊 Found ${papers.length} papers\n\n`;
+
+  // Most Recommended (put first for emphasis)
+  if (featured && featured.mostRecommended) {
+    const rec = featured.mostRecommended;
+    msg += `🏆 今日最推荐 TOP PICK\n`;
+    msg += `━━━━━━━━━━━━━━━━━━━━━━\n`;
+    msg += `📌 ${rec.title}\n\n`;
+    msg += `📝 ${rec.abstract.substring(0, 400)}...\n\n`;
+    msg += `✨ 推荐理由:\n`;
+    rec.recommendReasons.forEach((reason, i) => {
+      msg += `   ${i + 1}. ${reason}\n`;
+    });
+    msg += `\n🔗 ${rec.url}\n`;
+    msg += `━━━━━━━━━━━━━━━━━━━━━━\n\n`;
+  }
 
   // All papers list
   msg += `📋 All Papers:\n`;
