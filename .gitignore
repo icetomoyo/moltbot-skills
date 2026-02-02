@@ -1,32 +1,34 @@
-# Moltbot personal files
-AGENTS.md
-BOOTSTRAP.md
-HEARTBEAT.md
-IDENTITY.md
-SOUL.md
-TOOLS.md
-USER.md
-MEMORY.md
-memory/
+# Private/Personal data
+.chrome-profile/
+.chrome-profile-notebooklm/
+*.chrome-profile*
 
-# Generated files
-*.png
-*.svg
-*.skill
-*.mmd
-*.html
+# Environment & Config
+.env
+.env.local
+.env.*.local
+.git/config
 
-# OS files
-.DS_Store
-Thumbs.db
+# Credentials & Tokens
+*token*
+*credential*
+*secret*
+*.key
+*.pem
+*.p12
+*.pfx
 
-# Node.js (if any at root)
-node_modules/
-package-lock.json
-package.json
-
-# Logs
+# Cache & Logs
 *.log
+*.cache
+__pycache__/
+*.pyc
+.DS_Store
+
+# Dependencies
+node_modules/
+venv/
+*.venv
 
 # IDE
 .vscode/
@@ -34,19 +36,10 @@ package.json
 *.swp
 *.swo
 
-# Temporary files
-/tmp/
-*.tmp
+# Output (keep structure, ignore content)
+output/*.json
+output/*.txt
+output/*.md
 
-# Chrome profiles
-.chrome-profile/
-.chrome-profile-notebooklm/
-
-# Archive (temporary/test files)
-archive/
-
-# Canvas output
-canvas/
-
-# Content outputs
-content/
+# OS
+Thumbs.db
