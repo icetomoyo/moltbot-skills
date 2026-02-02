@@ -17,30 +17,108 @@ if (!fs.existsSync(OUTPUT_DIR)) {
   fs.mkdirSync(OUTPUT_DIR, { recursive: true });
 }
 
-// Hot topics tracking
+// Hot topics tracking - EXPANDED with more categories
 const HOT_TOPICS = {
-  ai: ['GPT-5', 'GPT-5o', 'o3', 'o3 mini', 'o1 pro', 'Operator',
-       'Claude 4', 'Claude 4 Opus', 'Claude 3.7',
-       'Gemini 2.0', 'Gemini 2.5', 'Gemini Flash',
-       'DeepSeek-V3.2', 'DeepSeek-V4', 'DeepSeek-R2',
-       'Llama 4', 'Llama 4 Scout', 'Llama 4 Maverick',
-       'Grok 3', 'Grok 3 mini',
-       'Kimi k1.5', 'Kimi k1.6',
-       'Qwen 2.5', 'Qwen 3', 'Qwq-32B'],
-  robotics: ['Figure 02', 'Figure 03', 'Figure AI', 'Helix',
-             'Optimus Gen 2', 'Optimus Gen 3', 'Tesla Bot',
-             'Unitree G1', 'Unitree H1', 'Unitree B2', 'Unitree Go2',
-             'Boston Dynamics Atlas', 'Spot', 'Digit',
-             'Agility Robotics', 'Fourier GR-1', 'Fourier GR-2',
-             'Apptronik Apollo', '1X Neo', 'Clone Robotics'],
-  vla: ['OpenVLA', 'OpenVLA 7B', 'π0', 'pi-zero', 'pi0',
-        'RT-2', 'RT-X', 'RT-Trajectory', 'RT-Sketch',
-        'Octo', 'RDT', '3D Diffusion Policy',
-        'ACT', 'Aloha', 'Aloha 2', 'Mobile ALOHA'],
-  worldModels: ['JEPA', 'I-JEPA', 'V-JEPA',
-                'Sora', 'Sora Turbo',
-                'DreamerV3', 'Dreamer v3', 'UniWorld', 'GAIA-1',
-                'world model', 'world models']
+  // AI & LLM - Core models
+  ai: ['GPT-5', 'GPT-5o', 'o3', 'o3 mini', 'o1 pro', 'o1', 'Operator',
+       'Claude 4', 'Claude 4 Opus', 'Claude 4 Sonnet', 'Claude 3.7', 'Claude Code',
+       'Gemini 2.0', 'Gemini 2.5', 'Gemini Flash', 'Gemini Ultra', 'Astra',
+       'DeepSeek-V3', 'DeepSeek-V3.2', 'DeepSeek-V4', 'DeepSeek-R1', 'DeepSeek-R2', 'DeepSeek-Coder',
+       'Llama 4', 'Llama 4 Scout', 'Llama 4 Maverick', 'Llama 3.3', 'Llama 3.2',
+       'Grok 3', 'Grok 3 mini', 'xAI',
+       'Kimi k1.5', 'Kimi k1.6', 'Moonshot',
+       'Qwen 2.5', 'Qwen 3', 'Qwen 3 MoE', 'Qwq-32B',
+       'Command R+', 'Cohere',
+       'Phi-4', 'Phi-4 mini',
+       'Gemma 2', 'Gemma 3', 'Gemma 27B',
+       'Nemotron', 'NVLM', 'Mamba', 'RWKV'],
+  
+  // Robotics & Embodied AI
+  robotics: ['Figure 02', 'Figure 03', 'Figure AI', 'Helix', 'Figure',
+             'Optimus Gen 2', 'Optimus Gen 3', 'Tesla Bot', 'Tesla Optimus',
+             'Unitree G1', 'Unitree H1', 'Unitree B2', 'Unitree Go2', 'Unitree',
+             'Boston Dynamics Atlas', 'Spot', 'Stretch', 'Digit',
+             'Agility Robotics', 'Fourier GR-1', 'Fourier GR-2', 'Fourier',
+             'Apptronik Apollo', '1X Neo', '1X Eve', 'Clone Robotics',
+             'MenteeBot', 'Astribot S1', 'Beyond Imagination',
+             'humanoid', 'humanoid robot', 'bipedal', 'quadruped'],
+  
+  // VLA & Robot Learning
+  vla: ['OpenVLA', 'OpenVLA 7B', 'π0', 'pi-zero', 'pi0', 'pi-zero model',
+        'RT-2', 'RT-X', 'RT-Trajectory', 'RT-Sketch', 'RT-Play',
+        'Octo', 'Octo Model', 'RDT', 'RDT-1B',
+        '3D Diffusion Policy', 'Diffusion Policy',
+        'ACT', 'Aloha', 'Aloha 2', 'Mobile ALOHA',
+        'VLA', 'Vision Language Action', 'vision-language-action',
+        'robot learning', 'imitation learning', 'behavior cloning',
+        'sim-to-real', 'sim2real', 'teleoperation', 'teleop'],
+  
+  // World Models
+  worldModels: ['JEPA', 'I-JEPA', 'V-JEPA', 'Video JEPA',
+                'Sora', 'Sora Turbo', 'OpenAI Sora',
+                'DreamerV3', 'Dreamer v3', 'Dreamer',
+                'UniWorld', 'GAIA-1', 'World Model', 'world models',
+                'physical world model', 'world simulator'],
+  
+  // AI Agents & Tools - NEW CATEGORY
+  agents: ['AI Agent', 'AI Agents', 'multi-agent', 'agentic AI',
+           'AutoGPT', 'Auto-GPT', 'BabyAGI',
+           'Devin', 'Cognition Devin', 'AI software engineer',
+           'Cursor', 'Cursor AI', 'Cursor editor',
+           'GitHub Copilot', 'Copilot', 'Codeium',
+           'Claude Computer Use', 'computer use', 'Operator AI',
+           'tool use', 'function calling', 'API calling',
+           'browser automation', 'web automation'],
+  
+  // Multimodal & Generation - NEW CATEGORY
+  multimodal: ['multimodal', 'multimodal model', 'any-to-any',
+               'vision language model', 'VLM', 'image generation',
+               'video generation', 'text-to-video', 'text-to-image',
+               'Runway', 'Runway Gen-3', 'Pika', 'Pika Labs',
+               'Veo', 'Google Veo', 'Luma AI', 'Dream Machine',
+               'Midjourney', 'Stable Diffusion', 'SDXL', 'FLUX',
+               'DALL-E 3', 'DALL-E', 'Imagen', 'Imagen 3',
+               'voice cloning', 'TTS', 'text-to-speech',
+               'music generation', 'audio generation'],
+  
+  // AI Infrastructure - NEW CATEGORY
+  infra: ['LLM training', 'model training', 'pre-training',
+          'fine-tuning', 'LoRA', 'QLoRA', 'PEFT',
+          'quantization', 'GGUF', 'AWQ', 'GPTQ',
+          'model distillation', 'knowledge distillation',
+          'inference optimization', 'vLLM', 'TensorRT-LLM',
+          'model deployment', 'model serving', 'API',
+          'GPU cluster', 'H100', 'A100', 'GPU shortage',
+          'Mixture of Experts', 'MoE', 'sparse attention',
+          'long context', 'context window', '1M context',
+          'RAG', 'retrieval augmented', 'vector database',
+          'embedding', 'vector search', 'semantic search'],
+  
+  // AI Safety & Alignment - NEW CATEGORY
+  safety: ['AI safety', 'AI alignment', 'RLHF', 'RLAIF',
+           'constitutional AI', 'AI ethics', 'responsible AI',
+           'model interpretability', 'mechanistic interpretability',
+           'jailbreak', 'prompt injection', 'adversarial attack',
+           'model evaluation', 'benchmark', 'leaderboard',
+           'MMLU', 'HumanEval', 'GSM8K', 'MATH',
+           'hallucination', 'factuality', 'truthfulness'],
+  
+  // Open Source & Community - NEW CATEGORY
+  opensource: ['open source', 'open-source model', 'open weights',
+               'HuggingFace', 'HF', 'HF Transformers',
+               'Llama.cpp', 'Ollama', 'LocalAI',
+               'GitHub', 'open source release', 'model license',
+               'community model', 'fine-tuned model', 'LoRA weights'],
+  
+  // Application Areas - NEW CATEGORY
+  apps: ['coding assistant', 'code generation', 'code completion',
+         'AI tutor', 'education AI', 'learning assistant',
+         'AI doctor', 'medical AI', 'healthcare AI', 'clinical AI',
+         'AI lawyer', 'legal AI', 'contract review',
+         'AI finance', 'trading bot', 'quant trading', 'FinGPT',
+         'AI customer service', 'chatbot', 'virtual assistant',
+         'content generation', 'copywriting AI', 'marketing AI',
+         'AI art', 'AI music', 'AI video', 'creative AI']
 };
 
 // Platform configurations
@@ -175,32 +253,37 @@ async function fetchHuggingFace() {
   }
 }
 
-// Fetch from Reddit JSON API (public)
+// Fetch from Reddit JSON API (public) with Nitter fallback
 async function fetchReddit() {
   console.log('  👽 Fetching Reddit...');
-  const subreddits = ['MachineLearning', 'LocalLLaMA', 'ArtificialIntelligence', 'robotics'];
+  const subreddits = ['MachineLearning', 'LocalLLaMA', 'ArtificialIntelligence', 'robotics', 'singularity', 'ChatGPT'];
   const results = [];
+  let rateLimited = false;
   
   for (const sub of subreddits) {
+    if (rateLimited) break;
+    
     try {
       const axios = require('axios');
       const url = `https://www.reddit.com/r/${sub}/hot.json?limit=10`;
       
       const response = await axios.get(url, { 
         timeout: 10000,
-        headers: { 'User-Agent': 'AI-Trend-Monitor/1.0' }
+        headers: { 
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+        }
       });
       
       const posts = response.data?.data?.children || [];
       
       for (const post of posts) {
         const data = post.data;
-        if (data.score > 20) { // Filter low engagement
+        if (data.score > 5) { // Lower threshold for more results
           results.push({
             title: data.title,
             url: `https://reddit.com${data.permalink}`,
             author: `u/${data.author}`,
-            score: Math.min(data.score / 100 + 2, 10),
+            score: Math.min(data.score / 50 + 3, 10),
             hotTopics: detectHotTopics(data.title + ' ' + (data.selftext || '')),
             timestamp: new Date(data.created_utc * 1000).toISOString(),
             platform: 'Reddit',
@@ -211,86 +294,214 @@ async function fetchReddit() {
         }
       }
     } catch (e) {
-      console.error(`    ❌ Reddit r/${sub} failed:`, e.message);
+      if (e.response?.status === 429 || e.message.includes('429')) {
+        console.error(`    ⚠️  Reddit rate limited (429), will use Nitter fallback`);
+        rateLimited = true;
+        break;
+      } else {
+        console.error(`    ❌ Reddit r/${sub} failed:`, e.message);
+      }
     }
   }
   
+  // If rate limited or very few results, try Nitter as fallback
+  if (rateLimited || results.length < 3) {
+    console.log('  🔄 Reddit limited/few results, trying Nitter fallback...');
+    try {
+      const nitterResults = await fetchNitter();
+      results.push(...nitterResults);
+    } catch (e) {
+      console.error('    ❌ Nitter fallback also failed:', e.message);
+    }
+  }
+  
+  console.log(`   ✅ ${results.length} 条`);
   return results;
 }
 
-// Fetch from Hacker News API
+// Fetch from Hacker News API with dynamic queries
 async function fetchHackerNews() {
   console.log('  🟠 Fetching HackerNews...');
   try {
     const axios = require('axios');
-    const queries = ['AI', 'LLM', 'GPT', 'Claude', 'robotics', 'VLA', 'world model'];
-    const results = [];
     
-    for (const query of queries) {
-      const url = `https://hn.algolia.com/api/v1/search?query=${encodeURIComponent(query)}&tags=story&numericFilters=points>30&hitsPerPage=5`;
+    // More diverse queries to avoid repetitive results
+    const queryGroups = [
+      // Core AI models
+      ['GPT-5', 'GPT-5 release', 'OpenAI GPT'],
+      ['Claude 4', 'Claude 3.7', 'Anthropic'],
+      ['DeepSeek', 'DeepSeek-R1', 'DeepSeek-V4'],
+      ['Gemini 2.5', 'Gemini Ultra', 'Google AI'],
+      ['Llama 4', 'Llama 3.3', 'Meta AI'],
       
-      const response = await axios.get(url, { timeout: 10000 });
-      const hits = response.data?.hits || [];
+      // Agents & Tools
+      ['AI agent', 'AutoGPT', 'Devin AI'],
+      ['Cursor AI', 'GitHub Copilot', 'coding assistant'],
       
-      for (const hit of hits) {
-        // Check if not already added
-        if (!results.find(r => r.url === hit.url)) {
-          results.push({
-            title: hit.title,
-            url: hit.url || `https://news.ycombinator.com/item?id=${hit.objectID}`,
-            author: hit.author,
-            score: Math.min(hit.points / 50 + 2, 10),
-            hotTopics: detectHotTopics(hit.title + ' ' + (hit.story_text || '')),
-            timestamp: hit.created_at,
-            platform: 'HackerNews',
-            points: hit.points,
-            comments: hit.num_comments
-          });
+      // Robotics
+      ['humanoid robot', 'Figure AI', 'Tesla Optimus'],
+      ['Boston Dynamics', 'Unitree', 'robot learning'],
+      
+      // VLA & World Models
+      ['OpenVLA', 'VLA model', 'RT-2'],
+      ['world model', 'JEPA', 'Sora'],
+      
+      // Open Source
+      ['open source AI', 'HuggingFace', 'Llama.cpp'],
+      
+      // Infrastructure
+      ['LLM inference', 'vLLM', 'model training'],
+      ['RAG', 'vector database', 'embeddings']
+    ];
+    
+    const results = [];
+    const seenUrls = new Set();
+    
+    // Pick random 8 query groups to avoid always same results
+    const shuffled = queryGroups.sort(() => 0.5 - Math.random()).slice(0, 8);
+    
+    for (const queryGroup of shuffled) {
+      for (const query of queryGroup) {
+        const url = `https://hn.algolia.com/api/v1/search?query=${encodeURIComponent(query)}&tags=story&numericFilters=points>25&hitsPerPage=3`;
+        
+        try {
+          const response = await axios.get(url, { timeout: 8000 });
+          const hits = response.data?.hits || [];
+          
+          for (const hit of hits) {
+            const hitUrl = hit.url || `https://news.ycombinator.com/item?id=${hit.objectID}`;
+            
+            // Skip duplicates
+            if (seenUrls.has(hitUrl)) continue;
+            seenUrls.add(hitUrl);
+            
+            // Skip if too old (older than 7 days)
+            const hitDate = new Date(hit.created_at);
+            const daysOld = (Date.now() - hitDate.getTime()) / (1000 * 60 * 60 * 24);
+            if (daysOld > 7) continue;
+            
+            results.push({
+              title: hit.title,
+              url: hitUrl,
+              author: hit.author,
+              score: Math.min(hit.points / 40 + 2, 10),
+              hotTopics: detectHotTopics(hit.title + ' ' + (hit.story_text || '')),
+              timestamp: hit.created_at,
+              platform: 'HackerNews',
+              points: hit.points,
+              comments: hit.num_comments
+            });
+          }
+        } catch (e) {
+          // Continue to next query
         }
       }
     }
     
-    return results.slice(0, 15);
+    console.log(`   ✅ ${results.length} 条`);
+    return results.slice(0, 20);
   } catch (e) {
     console.error('    ❌ HackerNews failed:', e.message);
     return [];
   }
 }
 
-// Fetch from Nitter (X mirror)
+// Fetch from Nitter (X mirror) using agent-browser
 async function fetchNitter() {
   console.log('  🐦 Fetching Nitter...');
   
   const instances = [
     'https://nitter.net',
-    'https://nitter.privacydev.net',
+    'https://nitter.privacydev.net', 
     'https://nitter.cz'
   ];
   
-  const queries = [
-    '(GPT-5 OR Claude-4 OR DeepSeek) min_faves:50',
-    '(OpenVLA OR VLA OR RT-2) min_faves:30',
-    '(world model OR JEPA OR Sora) min_faves:30'
+  // Build search queries from hot topics
+  const searchTerms = [
+    'GPT-5 OR Claude-4 OR DeepSeek',
+    'OpenVLA OR VLA OR RT-2',
+    'world model OR JEPA OR Sora',
+    'Figure AI OR Tesla Optimus OR humanoid',
+    'AI agent OR AutoGPT OR Devin'
   ];
   
   const results = [];
   
   for (const instance of instances) {
     try {
-      for (const query of queries) {
-        // Note: Nitter web scraping would require agent-browser
-        // For now, return empty or use a placeholder
-        // This is where you'd use: agent-browser open "${instance}/search?..."
+      for (const term of searchTerms) {
+        const searchUrl = `${instance}/search?f=tweets&q=${encodeURIComponent(term)}`;
+        
+        try {
+          // Use agent-browser to fetch the page
+          const browserOutput = execSync(
+            `agent-browser open "${searchUrl}" --format text 2>/dev/null || echo "BROWSER_FAILED"`,
+            { encoding: 'utf8', timeout: 15000 }
+          );
+          
+          if (browserOutput.includes('BROWSER_FAILED') || browserOutput.length < 100) {
+            continue;
+          }
+          
+          // Parse tweets from the HTML/text output
+          const tweets = parseNitterOutput(browserOutput, instance);
+          results.push(...tweets);
+          
+          // Limit results per query
+          if (results.length >= 20) break;
+          
+        } catch (e) {
+          // Continue to next query
+        }
       }
+      
+      // If we got results, don't try other instances
+      if (results.length > 0) break;
+      
     } catch (e) {
-      // Try next instance
+      console.log(`    ⚠️  Nitter instance ${instance} failed, trying next...`);
     }
   }
   
-  // Placeholder: return mock data for demonstration
-  // In production, this would use agent-browser to scrape Nitter
-  console.log('    ⚠️  Nitter scraping requires agent-browser (implementing...)');
-  return [];
+  console.log(`   ✅ ${results.length} 条`);
+  return results.slice(0, 15);
+}
+
+// Parse Nitter HTML output
+function parseNitterOutput(output, instance) {
+  const results = [];
+  const lines = output.split('\n');
+  
+  // Simple parsing - look for tweet patterns
+  // Nitter format: username, date, content, stats
+  let currentTweet = null;
+  
+  for (const line of lines) {
+    // Look for tweet content (usually contains @username or http)
+    if (line.includes('@') && (line.includes('http') || line.length > 50)) {
+      if (currentTweet) {
+        results.push(currentTweet);
+      }
+      
+      currentTweet = {
+        title: line.substring(0, 200),
+        url: `${instance}/search`,
+        author: 'Nitter',
+        score: 5, // Default score
+        hotTopics: detectHotTopics(line),
+        timestamp: new Date().toISOString(),
+        platform: 'Nitter',
+        likes: 0,
+        retweets: 0
+      };
+    }
+  }
+  
+  if (currentTweet) {
+    results.push(currentTweet);
+  }
+  
+  return results;
 }
 
 // Detect hot topics in text
@@ -361,31 +572,54 @@ function aggregateItems(allItems) {
   return { byPlatform, ranked: ranked.slice(0, 20) };
 }
 
-// Generate WhatsApp summary
+// Generate WhatsApp summary - OPTIMIZED to prevent truncation
 function generateWhatsAppSummary(data) {
   const { byPlatform, ranked } = data;
   
-  let msg = `🔥 AI Trend Monitor - ${new Date().toLocaleString('zh-CN')}\n\n`;
+  // Concise header
+  let msg = `🔥 AI热点 ${new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'})}\n`;
   
-  // Platform summary
-  msg += `📊 数据来源:\n`;
-  for (const [platform, items] of Object.entries(byPlatform)) {
-    const emoji = PLATFORMS[platform.toLowerCase()]?.emoji || '•';
-    msg += `   ${emoji} ${platform}: ${items.length} 条\n`;
-  }
-  msg += `\n`;
+  // Platform summary - one line
+  const platformSummary = Object.entries(byPlatform)
+    .map(([p, items]) => `${PLATFORMS[p.toLowerCase()]?.emoji || '•'}${items.length}`)
+    .join(' | ');
+  msg += `📊 ${platformSummary}\n\n`;
   
-  // Top trending topics
-  const topTopics = ranked.slice(0, 5);
+  // Top trending topics - only TOP 4 to save space
+  const topTopics = ranked.slice(0, 4);
   if (topTopics.length > 0) {
-    msg += `🏆 综合热度 TOP ${topTopics.length}\n`;
-    msg += `━━━━━━━━━━━━━━━━━━━━━━\n`;
+    msg += `🏆 TOP ${topTopics.length}\n`;
     
     topTopics.forEach((topic, i) => {
-      const fire = '🔥'.repeat(Math.min(Math.ceil(topic.combinedScore / 10), 3));
-      msg += `${i + 1}️⃣ [${topic.topic}]\n`;
-      msg += `   ${fire} 综合热度: ${topic.combinedScore.toFixed(1)}/10\n`;
-      msg += `   📊 来源: ${topic.platforms.join(', ')} (${topic.itemCount} 条)\n`;
+      const fire = '🔥'.repeat(Math.min(Math.ceil(topic.combinedScore / 15), 3));
+      const platforms = topic.platforms.slice(0, 3).join(',');
+      // Shortened format
+      msg += `${i + 1}. ${topic.topic} ${fire} ${topic.combinedScore.toFixed(0)}分\n`;
+      msg += `   📊 ${platforms} · ${topic.itemCount}条\n`;
+      
+      // Show best item - shortened
+      const topItem = topic.items.sort((a, b) => b.score - a.score)[0];
+      if (topItem && topItem.title) {
+        const shortTitle = topItem.title.substring(0, 45) + (topItem.title.length > 45 ? '...' : '');
+        msg += `   💬 ${shortTitle}\n`;
+      }
+    });
+    msg += `\n`;
+  }
+  
+  // Hot topics list - condensed
+  const otherTopics = ranked.slice(4, 10);
+  if (otherTopics.length > 0) {
+    msg += `📈 其他热点: `;
+    msg += otherTopics.map(t => `${t.topic}(${t.itemCount})`).join(' · ');
+    msg += `\n\n`;
+  }
+  
+  // Footer with timestamp
+  msg += `⏰ 更新: ${new Date().toLocaleString('zh-CN')}`;
+  
+  return msg;
+}
       
       // Show top item from this topic
       const topItem = topic.items.sort((a, b) => b.score - a.score)[0];
