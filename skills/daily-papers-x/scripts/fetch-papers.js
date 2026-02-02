@@ -153,9 +153,10 @@ const CATEGORIES = {
 
 const CONFIG = {
   totalMaxResults: 30,
-  hoursBack: parseInt(process.env.HOURS_BACK || '24', 10),
-  minPapersThreshold: 3,
+  // Always start with 24 hours, then expand to 48 if not enough papers
+  hoursBack: 24,
   fallbackHoursBack: 48,
+  minPapersThreshold: 3,
   trendingWeight: 2.0,  // Weight for trending keyword matches
   recencyWeight: 1.5    // Weight for very recent papers (last 6h)
 };
@@ -659,8 +660,9 @@ function selectFeaturedPapers(papers) {
 }
 
 // Generate full report with trending info
-function generateFullReport(papers, featured, date) {
+function generateFullReport(papers, featured, date, hoursBack) {
   const dateStr = getDateString(new Date(date));
+  const searchRange = hoursBack || CONFIG.hoursBack;
   
   const byCategory = {};
   papers.forEach(p => {
@@ -675,11 +677,11 @@ function generateFullReport(papers, featured, date) {
 > 1. 人工智能 (AI & LLM) • 2. 具身智能 (Embodied AI) • 3. AI与金融 • 4. AI与生物医学
 > 📊 Sources: arXiv, Hugging Face, x.com trending signals
 > 🔥 Trending Detection: Enabled (按用户定义的4大方向)
-> ⏰ Time Range: Last ${CONFIG.hoursBack} hours
+> ⏰ Time Range: Last ${searchRange} hours${searchRange > CONFIG.hoursBack ? ' (自动扩展搜索范围)' : ''}
 
 ## 📈 Summary
 
-Found **${papers.length}** papers across **${Object.keys(byCategory).length}** research directions.
+Found **${papers.length}** papers across **${Object.keys(byCategory).length}** research directions.`}
 
 | 研究方向 | Papers | Avg Trending |
 |---------|--------|-------------|
@@ -912,16 +914,16 @@ async function main() {
     ensureDependencies();
     
     console.log('🚀 Starting daily papers search (x.com trending edition)...\n');
-    console.log(`⏰ Search range: ${CONFIG.hoursBack} hours`);
+    console.log(`⏰ Initial search range: ${CONFIG.hoursBack} hours`);
     console.log(`🔥 Trending detection: Enabled`);
     console.log(`📊 Categories: ${Object.keys(CATEGORIES).join(', ')}\n`);
     
-    // First attempt with default hoursBack
+    // First attempt with 24 hours (default)
     let papers = await searchPapers(CONFIG.hoursBack);
     console.log(`\n📚 Total: ${papers.length} papers`);
     
-    // If not enough papers and not already using fallback, try wider range
-    if (papers.length < CONFIG.minPapersThreshold && CONFIG.hoursBack < CONFIG.fallbackHoursBack) {
+    // If not enough papers, automatically expand to 48 hours
+    if (papers.length < CONFIG.minPapersThreshold) {
       console.log(`\n⚠️ Only ${papers.length} papers found (threshold: ${CONFIG.minPapersThreshold})`);
       console.log(`🔄 Expanding search to ${CONFIG.fallbackHoursBack} hours...\n`);
       
@@ -952,8 +954,11 @@ async function main() {
     const featured = selectFeaturedPapers(papers);
     const date = new Date();
     
+    // Determine actual search range used (24h or 48h based on expansion)
+    const actualHoursBack = papers.length < CONFIG.minPapersThreshold ? CONFIG.fallbackHoursBack : CONFIG.hoursBack;
+    
     // Generate full report (saved locally)
-    const fullReport = generateFullReport(papers, featured, date);
+    const fullReport = generateFullReport(papers, featured, date, actualHoursBack);
     const memoryDir = path.join(WORKSPACE, 'memory');
     if (!fs.existsSync(memoryDir)) {
       fs.mkdirSync(memoryDir, { recursive: true });
