@@ -41,5 +41,8 @@ output/*.json
 output/*.txt
 output/*.md
 
+# Personal setup files
+GITHUB_SETUP.md
+
 # OS
 Thumbs.db
