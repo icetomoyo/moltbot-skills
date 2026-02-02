@@ -1,0 +1,376 @@
+{
+  "timestamp": "2026-02-02T09:25:32.391Z",
+  "totalKeywords": 62,
+  "categories": {
+    "ai": {
+      "name": "AI Models",
+      "keywords": [
+        {
+          "word": "GPT",
+          "score": 10,
+          "source": "seed"
+        },
+        {
+          "word": "Claude",
+          "score": 10,
+          "source": "seed"
+        },
+        {
+          "word": "Llama",
+          "score": 10,
+          "source": "seed"
+        },
+        {
+          "word": "Gemini",
+          "score": 10,
+          "source": "seed"
+        },
+        {
+          "word": "DeepSeek",
+          "score": 10,
+          "source": "seed"
+        },
+        {
+          "word": "Grok",
+          "score": 10,
+          "source": "seed"
+        },
+        {
+          "word": "Kimi",
+          "score": 10,
+          "source": "seed"
+        },
+        {
+          "word": "Qwen",
+          "score": 10,
+          "source": "seed"
+        },
+        {
+          "word": "Mistral",
+          "score": 10,
+          "source": "seed"
+        },
+        {
+          "word": "Phi",
+          "score": 10,
+          "source": "seed"
+        }
+      ],
+      "trends": []
+    },
+    "robotics": {
+      "name": "Robotics",
+      "keywords": [
+        {
+          "word": "robotics",
+          "score": 20,
+          "source": "extracted"
+        },
+        {
+          "word": "Figure",
+          "score": 10,
+          "source": "seed"
+        },
+        {
+          "word": "Optimus",
+          "score": 10,
+          "source": "seed"
+        },
+        {
+          "word": "Atlas",
+          "score": 10,
+          "source": "seed"
+        },
+        {
+          "word": "Spot",
+          "score": 10,
+          "source": "seed"
+        },
+        {
+          "word": "Digit",
+          "score": 10,
+          "source": "seed"
+        },
+        {
+          "word": "Unitree",
+          "score": 10,
+          "source": "seed"
+        },
+        {
+          "word": "humanoid",
+          "score": 10,
+          "source": "seed"
+        },
+        {
+          "word": "bipedal",
+          "score": 10,
+          "source": "seed"
+        }
+      ],
+      "trends": []
+    },
+    "agents": {
+      "name": "AI Agents",
+      "keywords": [
+        {
+          "word": "Agent",
+          "score": 10,
+          "source": "seed"
+        },
+        {
+          "word": "AutoGPT",
+          "score": 10,
+          "source": "seed"
+        },
+        {
+          "word": "Devin",
+          "score": 10,
+          "source": "seed"
+        },
+        {
+          "word": "Cursor",
+          "score": 10,
+          "source": "seed"
+        },
+        {
+          "word": "Copilot",
+          "score": 10,
+          "source": "seed"
+        },
+        {
+          "word": "Computer Use",
+          "score": 10,
+          "source": "seed"
+        }
+      ],
+      "trends": []
+    },
+    "vla": {
+      "name": "VLA & Robot Learning",
+      "keywords": [
+        {
+          "word": "practical",
+          "score": 20,
+          "source": "extracted"
+        },
+        {
+          "word": "interaction",
+          "score": 12,
+          "source": "extracted"
+        },
+        {
+          "word": "VLA",
+          "score": 10,
+          "source": "seed"
+        },
+        {
+          "word": "OpenVLA",
+          "score": 10,
+          "source": "seed"
+        },
+        {
+          "word": "RT-2",
+          "score": 10,
+          "source": "seed"
+        },
+        {
+          "word": "Diffusion Policy",
+          "score": 10,
+          "source": "seed"
+        },
+        {
+          "word": "ACT",
+          "score": 10,
+          "source": "seed"
+        },
+        {
+          "word": "Aloha",
+          "score": 10,
+          "source": "seed"
+        }
+      ],
+      "trends": []
+    },
+    "worldModels": {
+      "name": "World Models",
+      "keywords": [
+        {
+          "word": "JEPA",
+          "score": 10,
+          "source": "seed"
+        },
+        {
+          "word": "Sora",
+          "score": 10,
+          "source": "seed"
+        },
+        {
+          "word": "Dreamer",
+          "score": 10,
+          "source": "seed"
+        },
+        {
+          "word": "World Model",
+          "score": 10,
+          "source": "seed"
+        }
+      ],
+      "trends": []
+    },
+    "multimodal": {
+      "name": "Multimodal",
+      "keywords": [
+        {
+          "word": "Multimodal",
+          "score": 10,
+          "source": "seed"
+        },
+        {
+          "word": "VLM",
+          "score": 10,
+          "source": "seed"
+        },
+        {
+          "word": "Image Generation",
+          "score": 10,
+          "source": "seed"
+        },
+        {
+          "word": "Video Generation",
+          "score": 10,
+          "source": "seed"
+        }
+      ],
+      "trends": []
+    },
+    "infra": {
+      "name": "Infrastructure",
+      "keywords": [
+        {
+          "word": "Training",
+          "score": 10,
+          "source": "seed"
+        },
+        {
+          "word": "Inference",
+          "score": 10,
+          "source": "seed"
+        },
+        {
+          "word": "LoRA",
+          "score": 10,
+          "source": "seed"
+        },
+        {
+          "word": "Quantization",
+          "score": 10,
+          "source": "seed"
+        },
+        {
+          "word": "RAG",
+          "score": 10,
+          "source": "seed"
+        },
+        {
+          "word": "MoE",
+          "score": 10,
+          "source": "seed"
+        }
+      ],
+      "trends": []
+    },
+    "safety": {
+      "name": "Safety & Alignment",
+      "keywords": [
+        {
+          "word": "Safety",
+          "score": 10,
+          "source": "seed"
+        },
+        {
+          "word": "Alignment",
+          "score": 10,
+          "source": "seed"
+        },
+        {
+          "word": "RLHF",
+          "score": 10,
+          "source": "seed"
+        },
+        {
+          "word": "Interpretability",
+          "score": 10,
+          "source": "seed"
+        }
+      ],
+      "trends": []
+    },
+    "opensource": {
+      "name": "Open Source",
+      "keywords": [
+        {
+          "word": "open-source",
+          "score": 14,
+          "source": "extracted"
+        },
+        {
+          "word": "Open Source",
+          "score": 10,
+          "source": "seed"
+        },
+        {
+          "word": "HuggingFace",
+          "score": 10,
+          "source": "seed"
+        },
+        {
+          "word": "GitHub",
+          "score": 10,
+          "source": "seed"
+        },
+        {
+          "word": "Llama.cpp",
+          "score": 10,
+          "source": "seed"
+        }
+      ],
+      "trends": []
+    },
+    "apps": {
+      "name": "Applications",
+      "keywords": [
+        {
+          "word": "decoding",
+          "score": 14,
+          "source": "extracted"
+        },
+        {
+          "word": "Coding",
+          "score": 10,
+          "source": "seed"
+        },
+        {
+          "word": "Medical",
+          "score": 10,
+          "source": "seed"
+        },
+        {
+          "word": "Legal",
+          "score": 10,
+          "source": "seed"
+        },
+        {
+          "word": "Finance",
+          "score": 10,
+          "source": "seed"
+        },
+        {
+          "word": "Education",
+          "score": 10,
+          "source": "seed"
+        }
+      ],
+      "trends": []
+    }
+  }
+}
