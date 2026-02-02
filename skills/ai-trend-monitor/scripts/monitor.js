@@ -19,7 +19,6 @@ if (!fs.existsSync(OUTPUT_DIR)) {
 
 // Hot topics tracking - EXPANDED with more categories
 const HOT_TOPICS = {
-  // AI & LLM - Core models
   ai: ['GPT-5', 'GPT-5o', 'o3', 'o3 mini', 'o1 pro', 'o1', 'Operator',
        'Claude 4', 'Claude 4 Opus', 'Claude 4 Sonnet', 'Claude 3.7', 'Claude Code',
        'Gemini 2.0', 'Gemini 2.5', 'Gemini Flash', 'Gemini Ultra', 'Astra',
@@ -33,7 +32,6 @@ const HOT_TOPICS = {
        'Gemma 2', 'Gemma 3', 'Gemma 27B',
        'Nemotron', 'NVLM', 'Mamba', 'RWKV'],
   
-  // Robotics & Embodied AI
   robotics: ['Figure 02', 'Figure 03', 'Figure AI', 'Helix', 'Figure',
              'Optimus Gen 2', 'Optimus Gen 3', 'Tesla Bot', 'Tesla Optimus',
              'Unitree G1', 'Unitree H1', 'Unitree B2', 'Unitree Go2', 'Unitree',
@@ -43,7 +41,6 @@ const HOT_TOPICS = {
              'MenteeBot', 'Astribot S1', 'Beyond Imagination',
              'humanoid', 'humanoid robot', 'bipedal', 'quadruped'],
   
-  // VLA & Robot Learning
   vla: ['OpenVLA', 'OpenVLA 7B', 'π0', 'pi-zero', 'pi0', 'pi-zero model',
         'RT-2', 'RT-X', 'RT-Trajectory', 'RT-Sketch', 'RT-Play',
         'Octo', 'Octo Model', 'RDT', 'RDT-1B',
@@ -53,14 +50,12 @@ const HOT_TOPICS = {
         'robot learning', 'imitation learning', 'behavior cloning',
         'sim-to-real', 'sim2real', 'teleoperation', 'teleop'],
   
-  // World Models
   worldModels: ['JEPA', 'I-JEPA', 'V-JEPA', 'Video JEPA',
                 'Sora', 'Sora Turbo', 'OpenAI Sora',
                 'DreamerV3', 'Dreamer v3', 'Dreamer',
                 'UniWorld', 'GAIA-1', 'World Model', 'world models',
                 'physical world model', 'world simulator'],
   
-  // AI Agents & Tools - NEW CATEGORY
   agents: ['AI Agent', 'AI Agents', 'multi-agent', 'agentic AI',
            'AutoGPT', 'Auto-GPT', 'BabyAGI',
            'Devin', 'Cognition Devin', 'AI software engineer',
@@ -70,7 +65,6 @@ const HOT_TOPICS = {
            'tool use', 'function calling', 'API calling',
            'browser automation', 'web automation'],
   
-  // Multimodal & Generation - NEW CATEGORY
   multimodal: ['multimodal', 'multimodal model', 'any-to-any',
                'vision language model', 'VLM', 'image generation',
                'video generation', 'text-to-video', 'text-to-image',
@@ -81,7 +75,6 @@ const HOT_TOPICS = {
                'voice cloning', 'TTS', 'text-to-speech',
                'music generation', 'audio generation'],
   
-  // AI Infrastructure - NEW CATEGORY
   infra: ['LLM training', 'model training', 'pre-training',
           'fine-tuning', 'LoRA', 'QLoRA', 'PEFT',
           'quantization', 'GGUF', 'AWQ', 'GPTQ',
@@ -94,7 +87,6 @@ const HOT_TOPICS = {
           'RAG', 'retrieval augmented', 'vector database',
           'embedding', 'vector search', 'semantic search'],
   
-  // AI Safety & Alignment - NEW CATEGORY
   safety: ['AI safety', 'AI alignment', 'RLHF', 'RLAIF',
            'constitutional AI', 'AI ethics', 'responsible AI',
            'model interpretability', 'mechanistic interpretability',
@@ -103,14 +95,12 @@ const HOT_TOPICS = {
            'MMLU', 'HumanEval', 'GSM8K', 'MATH',
            'hallucination', 'factuality', 'truthfulness'],
   
-  // Open Source & Community - NEW CATEGORY
   opensource: ['open source', 'open-source model', 'open weights',
                'HuggingFace', 'HF', 'HF Transformers',
                'Llama.cpp', 'Ollama', 'LocalAI',
                'GitHub', 'open source release', 'model license',
                'community model', 'fine-tuned model', 'LoRA weights'],
   
-  // Application Areas - NEW CATEGORY
   apps: ['coding assistant', 'code generation', 'code completion',
          'AI tutor', 'education AI', 'learning assistant',
          'AI doctor', 'medical AI', 'healthcare AI', 'clinical AI',
@@ -210,8 +200,7 @@ function parseArxivXml(xml) {
 }
 
 function calculateArxivScore(entry) {
-  // arXiv papers get base score + hot topic bonus
-  let score = 5; // base score for being new
+  let score = 5;
   const text = (entry.title + ' ' + entry.abstract).toLowerCase();
   
   for (const [category, topics] of Object.entries(HOT_TOPICS)) {
@@ -253,7 +242,7 @@ async function fetchHuggingFace() {
   }
 }
 
-// Fetch from Reddit JSON API (public) with Nitter fallback
+// Fetch from Reddit with Nitter fallback
 async function fetchReddit() {
   console.log('  👽 Fetching Reddit...');
   const subreddits = ['MachineLearning', 'LocalLLaMA', 'ArtificialIntelligence', 'robotics', 'singularity', 'ChatGPT'];
@@ -278,7 +267,7 @@ async function fetchReddit() {
       
       for (const post of posts) {
         const data = post.data;
-        if (data.score > 5) { // Lower threshold for more results
+        if (data.score > 5) {
           results.push({
             title: data.title,
             url: `https://reddit.com${data.permalink}`,
@@ -295,7 +284,7 @@ async function fetchReddit() {
       }
     } catch (e) {
       if (e.response?.status === 429 || e.message.includes('429')) {
-        console.error(`    ⚠️  Reddit rate limited (429), will use Nitter fallback`);
+        console.error(`    ⚠️  Reddit rate limited (429)`);
         rateLimited = true;
         break;
       } else {
@@ -304,14 +293,13 @@ async function fetchReddit() {
     }
   }
   
-  // If rate limited or very few results, try Nitter as fallback
   if (rateLimited || results.length < 3) {
-    console.log('  🔄 Reddit limited/few results, trying Nitter fallback...');
+    console.log('  🔄 Trying Nitter fallback...');
     try {
       const nitterResults = await fetchNitter();
       results.push(...nitterResults);
     } catch (e) {
-      console.error('    ❌ Nitter fallback also failed:', e.message);
+      console.error('    ❌ Nitter fallback failed:', e.message);
     }
   }
   
@@ -325,39 +313,21 @@ async function fetchHackerNews() {
   try {
     const axios = require('axios');
     
-    // More diverse queries to avoid repetitive results
     const queryGroups = [
-      // Core AI models
       ['GPT-5', 'GPT-5 release', 'OpenAI GPT'],
       ['Claude 4', 'Claude 3.7', 'Anthropic'],
       ['DeepSeek', 'DeepSeek-R1', 'DeepSeek-V4'],
       ['Gemini 2.5', 'Gemini Ultra', 'Google AI'],
       ['Llama 4', 'Llama 3.3', 'Meta AI'],
-      
-      // Agents & Tools
       ['AI agent', 'AutoGPT', 'Devin AI'],
       ['Cursor AI', 'GitHub Copilot', 'coding assistant'],
-      
-      // Robotics
       ['humanoid robot', 'Figure AI', 'Tesla Optimus'],
-      ['Boston Dynamics', 'Unitree', 'robot learning'],
-      
-      // VLA & World Models
       ['OpenVLA', 'VLA model', 'RT-2'],
-      ['world model', 'JEPA', 'Sora'],
-      
-      // Open Source
-      ['open source AI', 'HuggingFace', 'Llama.cpp'],
-      
-      // Infrastructure
-      ['LLM inference', 'vLLM', 'model training'],
-      ['RAG', 'vector database', 'embeddings']
+      ['world model', 'JEPA', 'Sora']
     ];
     
     const results = [];
     const seenUrls = new Set();
-    
-    // Pick random 8 query groups to avoid always same results
     const shuffled = queryGroups.sort(() => 0.5 - Math.random()).slice(0, 8);
     
     for (const queryGroup of shuffled) {
@@ -370,12 +340,9 @@ async function fetchHackerNews() {
           
           for (const hit of hits) {
             const hitUrl = hit.url || `https://news.ycombinator.com/item?id=${hit.objectID}`;
-            
-            // Skip duplicates
             if (seenUrls.has(hitUrl)) continue;
             seenUrls.add(hitUrl);
             
-            // Skip if too old (older than 7 days)
             const hitDate = new Date(hit.created_at);
             const daysOld = (Date.now() - hitDate.getTime()) / (1000 * 60 * 60 * 24);
             if (daysOld > 7) continue;
@@ -393,7 +360,7 @@ async function fetchHackerNews() {
             });
           }
         } catch (e) {
-          // Continue to next query
+          // Continue
         }
       }
     }
@@ -406,17 +373,10 @@ async function fetchHackerNews() {
   }
 }
 
-// Fetch from Nitter (X mirror) using agent-browser
+// Fetch from Nitter
 async function fetchNitter() {
   console.log('  🐦 Fetching Nitter...');
   
-  const instances = [
-    'https://nitter.net',
-    'https://nitter.privacydev.net', 
-    'https://nitter.cz'
-  ];
-  
-  // Build search queries from hot topics
   const searchTerms = [
     'GPT-5 OR Claude-4 OR DeepSeek',
     'OpenVLA OR VLA OR RT-2',
@@ -427,81 +387,36 @@ async function fetchNitter() {
   
   const results = [];
   
-  for (const instance of instances) {
+  for (const term of searchTerms.slice(0, 3)) {
     try {
-      for (const term of searchTerms) {
-        const searchUrl = `${instance}/search?f=tweets&q=${encodeURIComponent(term)}`;
-        
-        try {
-          // Use agent-browser to fetch the page
-          const browserOutput = execSync(
-            `agent-browser open "${searchUrl}" --format text 2>/dev/null || echo "BROWSER_FAILED"`,
-            { encoding: 'utf8', timeout: 15000 }
-          );
-          
-          if (browserOutput.includes('BROWSER_FAILED') || browserOutput.length < 100) {
-            continue;
-          }
-          
-          // Parse tweets from the HTML/text output
-          const tweets = parseNitterOutput(browserOutput, instance);
-          results.push(...tweets);
-          
-          // Limit results per query
-          if (results.length >= 20) break;
-          
-        } catch (e) {
-          // Continue to next query
+      const searchUrl = `https://nitter.net/search?f=tweets&q=${encodeURIComponent(term)}`;
+      
+      const browserOutput = execSync(
+        `agent-browser open "${searchUrl}" --format text 2>/dev/null || echo "FAILED"`,
+        { encoding: 'utf8', timeout: 15000 }
+      );
+      
+      if (!browserOutput.includes('FAILED') && browserOutput.length > 100) {
+        const lines = browserOutput.split('\n').filter(l => l.includes('@') && l.length > 50);
+        for (const line of lines.slice(0, 5)) {
+          results.push({
+            title: line.substring(0, 200),
+            url: 'https://nitter.net/search',
+            author: 'Nitter',
+            score: 5,
+            hotTopics: detectHotTopics(line),
+            timestamp: new Date().toISOString(),
+            platform: 'Nitter'
+          });
         }
       }
-      
-      // If we got results, don't try other instances
-      if (results.length > 0) break;
-      
     } catch (e) {
-      console.log(`    ⚠️  Nitter instance ${instance} failed, trying next...`);
+      // Continue
     }
   }
   
   console.log(`   ✅ ${results.length} 条`);
   return results.slice(0, 15);
-}
-
-// Parse Nitter HTML output
-function parseNitterOutput(output, instance) {
-  const results = [];
-  const lines = output.split('\n');
-  
-  // Simple parsing - look for tweet patterns
-  // Nitter format: username, date, content, stats
-  let currentTweet = null;
-  
-  for (const line of lines) {
-    // Look for tweet content (usually contains @username or http)
-    if (line.includes('@') && (line.includes('http') || line.length > 50)) {
-      if (currentTweet) {
-        results.push(currentTweet);
-      }
-      
-      currentTweet = {
-        title: line.substring(0, 200),
-        url: `${instance}/search`,
-        author: 'Nitter',
-        score: 5, // Default score
-        hotTopics: detectHotTopics(line),
-        timestamp: new Date().toISOString(),
-        platform: 'Nitter',
-        likes: 0,
-        retweets: 0
-      };
-    }
-  }
-  
-  if (currentTweet) {
-    results.push(currentTweet);
-  }
-  
-  return results;
 }
 
 // Detect hot topics in text
@@ -523,7 +438,6 @@ function detectHotTopics(text) {
 
 // Aggregate and rank all items
 function aggregateItems(allItems) {
-  // Group by platform
   const byPlatform = {};
   allItems.forEach(item => {
     const p = item.platform;
@@ -531,19 +445,16 @@ function aggregateItems(allItems) {
     byPlatform[p].push(item);
   });
   
-  // Sort each platform by score
   for (const p of Object.keys(byPlatform)) {
     byPlatform[p].sort((a, b) => b.score - a.score);
   }
   
-  // Calculate combined scores for similar items
   const topicGroups = {};
   
   allItems.forEach(item => {
     const keyTopics = item.hotTopics?.map(h => h.topic) || [];
     if (keyTopics.length === 0) return;
     
-    // Use first hot topic as group key
     const key = keyTopics[0];
     if (!topicGroups[key]) {
       topicGroups[key] = {
@@ -560,7 +471,6 @@ function aggregateItems(allItems) {
     topicGroups[key].platforms.add(item.platform);
   });
   
-  // Convert to array and sort
   const ranked = Object.values(topicGroups)
     .map(g => ({
       ...g,
@@ -572,75 +482,59 @@ function aggregateItems(allItems) {
   return { byPlatform, ranked: ranked.slice(0, 20) };
 }
 
-// Generate WhatsApp summary - OPTIMIZED to prevent truncation
+// Generate WhatsApp summary - ENHANCED version
 function generateWhatsAppSummary(data) {
   const { byPlatform, ranked } = data;
   
-  // Concise header
-  let msg = `🔥 AI热点 ${new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'})}\n`;
+  let msg = `🔥 AI热点监控 ${new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'})}\n`;
   
-  // Platform summary - one line
   const platformSummary = Object.entries(byPlatform)
     .map(([p, items]) => `${PLATFORMS[p.toLowerCase()]?.emoji || '•'}${items.length}`)
     .join(' | ');
-  msg += `📊 ${platformSummary}\n\n`;
+  msg += `📊 数据源: ${platformSummary}\n\n`;
   
-  // Top trending topics - only TOP 4 to save space
-  const topTopics = ranked.slice(0, 4);
+  // TOP 5 with detailed info
+  const topTopics = ranked.slice(0, 5);
   if (topTopics.length > 0) {
-    msg += `🏆 TOP ${topTopics.length}\n`;
+    msg += `🏆 TOP ${topTopics.length} 热点话题\n`;
+    msg += `━━━━━━━━━━━━━━━━━━━━━━\n`;
     
     topTopics.forEach((topic, i) => {
       const fire = '🔥'.repeat(Math.min(Math.ceil(topic.combinedScore / 15), 3));
-      const platforms = topic.platforms.slice(0, 3).join(',');
-      // Shortened format
-      msg += `${i + 1}. ${topic.topic} ${fire} ${topic.combinedScore.toFixed(0)}分\n`;
-      msg += `   📊 ${platforms} · ${topic.itemCount}条\n`;
+      const platforms = topic.platforms.slice(0, 3).join(', ');
       
-      // Show best item - shortened
-      const topItem = topic.items.sort((a, b) => b.score - a.score)[0];
-      if (topItem && topItem.title) {
-        const shortTitle = topItem.title.substring(0, 45) + (topItem.title.length > 45 ? '...' : '');
-        msg += `   💬 ${shortTitle}\n`;
-      }
+      msg += `\n${i + 1}️⃣ 【${topic.topic}】${fire}\n`;
+      msg += `   📈 热度: ${topic.combinedScore.toFixed(1)}分 | 📊 ${platforms} | 📝 ${topic.itemCount}条\n`;
+      
+      // Show top 2 items with full titles
+      const sortedItems = topic.items.sort((a, b) => b.score - a.score).slice(0, 2);
+      sortedItems.forEach((item, idx) => {
+        if (item.title) {
+          // Show full title but limit to 80 chars
+          const displayTitle = item.title.length > 80 
+            ? item.title.substring(0, 80) + '...' 
+            : item.title;
+          msg += `   💬 ${idx + 1}. ${displayTitle}\n`;
+          if (item.url) {
+            msg += `   🔗 ${item.url}\n`;
+          }
+        }
+      });
+    });
+    msg += `\n━━━━━━━━━━━━━━━━━━━━━━\n\n`;
+  }
+  
+  // Other hot topics
+  const otherTopics = ranked.slice(5, 12);
+  if (otherTopics.length > 0) {
+    msg += `📌 其他关注话题:\n`;
+    otherTopics.forEach((t, i) => {
+      msg += `   ${i + 6}. ${t.topic} (${t.itemCount}条)\n`;
     });
     msg += `\n`;
   }
   
-  // Hot topics list - condensed
-  const otherTopics = ranked.slice(4, 10);
-  if (otherTopics.length > 0) {
-    msg += `📈 其他热点: `;
-    msg += otherTopics.map(t => `${t.topic}(${t.itemCount})`).join(' · ');
-    msg += `\n\n`;
-  }
-  
-  // Footer with timestamp
-  msg += `⏰ 更新: ${new Date().toLocaleString('zh-CN')}`;
-  
-  return msg;
-}
-      
-      // Show top item from this topic
-      const topItem = topic.items.sort((a, b) => b.score - a.score)[0];
-      if (topItem) {
-        const summary = topItem.title?.substring(0, 60) + (topItem.title?.length > 60 ? '...' : '');
-        msg += `   💬 ${summary}\n`;
-        msg += `   🔗 ${topItem.url}\n`;
-      }
-      msg += `\n`;
-    });
-    msg += `━━━━━━━━━━━━━━━━━━━━━━\n\n`;
-  }
-  
-  // Hot topics list
-  const allTopics = ranked.slice(0, 10);
-  if (allTopics.length > 0) {
-    msg += `📈 热门话题:\n`;
-    allTopics.forEach((t, i) => {
-      msg += `   ${i + 1}. ${t.topic} (${t.itemCount} 提及)\n`;
-    });
-  }
+  msg += `⏰ 更新时间: ${new Date().toLocaleString('zh-CN')}`;
   
   return msg;
 }
@@ -649,15 +543,12 @@ function generateWhatsAppSummary(data) {
 function saveOutputs(data, whatsappMsg) {
   const timestamp = getTimestamp();
   
-  // Save JSON
   const jsonPath = path.join(OUTPUT_DIR, `trends-${timestamp}.json`);
   fs.writeFileSync(jsonPath, JSON.stringify(data, null, 2), 'utf8');
   
-  // Save WhatsApp message
   const msgPath = path.join(OUTPUT_DIR, `whatsapp-${timestamp}.txt`);
   fs.writeFileSync(msgPath, whatsappMsg, 'utf8');
   
-  // Save latest
   fs.writeFileSync(path.join(OUTPUT_DIR, 'latest-whatsapp.txt'), whatsappMsg, 'utf8');
   
   return { jsonPath, msgPath };
@@ -672,7 +563,6 @@ async function main() {
   
   const allItems = [];
   
-  // Fetch from all enabled platforms
   for (const [key, config] of Object.entries(PLATFORMS)) {
     if (config.enabled) {
       console.log(`${config.emoji} ${config.name}:`);
@@ -694,21 +584,17 @@ async function main() {
     return;
   }
   
-  // Aggregate and rank
   console.log('\n🔄 分析热点话题...');
   const data = aggregateItems(allItems);
   
-  // Generate summary
   console.log('📝 生成报告...');
   const whatsappMsg = generateWhatsAppSummary(data);
   
-  // Save
   const paths = saveOutputs(data, whatsappMsg);
   console.log(`\n💾 已保存:`);
   console.log(`   JSON: ${path.basename(paths.jsonPath)}`);
   console.log(`   WhatsApp: ${path.basename(paths.msgPath)}`);
   
-  // Output for WhatsApp
   console.log('\n📱 WhatsApp Message:');
   console.log('---WHATSAPP_MESSAGE_START---');
   console.log(whatsappMsg);
