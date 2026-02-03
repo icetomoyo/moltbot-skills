@@ -22,15 +22,21 @@ npm install
 npm start
 ```
 
-## 数据源
+## 数据源（6个平台）
 
-| 来源 | 类型 | 访问方式 |
-|------|------|---------|
-| 📄 **arXiv** | 学术论文 | API (实时) |
-| 🤗 **HuggingFace** | 模型/论文 | API (实时) |
-| 👽 **Reddit** | 社区讨论 | 公开 JSON API (分钟级) |
-| 🟠 **HackerNews** | 技术圈 | API (实时) |
-| 🐦 **Nitter** | 推文镜像 | agent-browser (分钟-小时级) |
+| 来源 | 类型 | 访问方式 | Emoji |
+|------|------|---------|-------|
+| 📄 **arXiv** | 学术论文 | API (实时) | 📄 |
+| 🤗 **HuggingFace** | 模型/论文 | API (实时) | 🤗 |
+| 👽 **Reddit** | 社区讨论 | 公开 JSON API (分钟级) | 👽 |
+| 🟠 **HackerNews** | 技术圈 | API (实时) | 🟠 |
+| 🐦 **Nitter** | 推文镜像 | agent-browser (分钟-小时级) | 🐦 |
+| 🐙 **GitHub** | 开源项目 | API (实时) | 🐙 |
+
+### 新增：GitHub 监控
+- 搜索最近7天创建的 AI/ML 相关仓库
+- 基于 stars 和 forks 计算热度
+- 支持多查询并行（AI、Agents、Robotics、Transformer）
 
 ## 监控领域
 
