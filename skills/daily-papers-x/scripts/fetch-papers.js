@@ -408,6 +408,20 @@ async function main() {
     const mdPath = path.join(memoryDir, `papers-${getDateString(date)}.md`);
     fs.writeFileSync(mdPath, fullReport, 'utf8');
     console.log(`\n✅ Full report: ${mdPath}`);
+    
+    // Also save to sync folder for user access
+    const SYNC_FOLDER = '/Users/icetomoyo/Downloads/同步空间/Dir4Openclaw';
+    try {
+      if (!fs.existsSync(SYNC_FOLDER)) {
+        fs.mkdirSync(SYNC_FOLDER, { recursive: true });
+      }
+      const syncPath = path.join(SYNC_FOLDER, `papers-${getDateString(date)}.md`);
+      fs.writeFileSync(syncPath, fullReport, 'utf8');
+      console.log(`✅ Synced to: ${syncPath}`);
+    } catch (e) {
+      console.warn(`⚠️  Could not sync to folder: ${e.message}`);
+    }
+    
     const whatsappSummary = generateWhatsAppSummary(featured);
     const msgPath = path.join(memoryDir, `papers-${getDateString(date)}-summary.txt`);
     fs.writeFileSync(msgPath, whatsappSummary, 'utf8');
