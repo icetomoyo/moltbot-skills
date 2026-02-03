@@ -12,6 +12,9 @@ const { execSync } = require('child_process');
 const SKILL_DIR = __dirname;
 const WORKSPACE = process.env.WORKSPACE || '/Users/icetomoyo/clawd';
 const OUTPUT_DIR = path.join(SKILL_DIR, '..', 'output');
+
+// Load config for sync folder
+const { ensureSyncFolder } = require('../../config-loader');
 const TREND_MONITOR_DIR = path.join(WORKSPACE, 'skills', 'ai-trend-monitor', 'output');
 
 // Ensure output directory exists
@@ -332,17 +335,16 @@ function saveReport(content, format = 'full') {
   // Also save as latest
   fs.writeFileSync(path.join(OUTPUT_DIR, 'latest-analysis.md'), content, 'utf8');
   
-  // Save to sync folder for user access
-  const SYNC_FOLDER = '/Users/icetomoyo/Downloads/同步空间/Dir4Openclaw';
-  try {
-    if (!fs.existsSync(SYNC_FOLDER)) {
-      fs.mkdirSync(SYNC_FOLDER, { recursive: true });
+  // Save to sync folder for user access (from config)
+  const syncFolder = ensureSyncFolder();
+  if (syncFolder) {
+    try {
+      const syncPath = path.join(syncFolder, filename);
+      fs.writeFileSync(syncPath, content, 'utf8');
+      console.log(`📁 Also saved to sync folder: ${syncPath}`);
+    } catch (e) {
+      console.warn(`⚠️  Could not save to sync folder: ${e.message}`);
     }
-    const syncPath = path.join(SYNC_FOLDER, filename);
-    fs.writeFileSync(syncPath, content, 'utf8');
-    console.log(`📁 Also saved to sync folder: ${syncPath}`);
-  } catch (e) {
-    console.warn(`⚠️  Could not save to sync folder: ${e.message}`);
   }
   
   return filepath;

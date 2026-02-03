@@ -64,11 +64,29 @@ Render Mermaid diagrams as beautiful SVGs or ASCII art. Supports flowcharts, sta
 
 ## 📦 Installation
 
-### Method 1: Clone Repository
+### Step 1: Clone Repository
 ```bash
 git clone https://github.com/icetomoyo/openclaw-skills.git
 cd openclaw-skills
 ```
+
+### Step 2: Configure Environment
+```bash
+# Copy the example config file
+cp .env.example .env
+
+# Edit .env and set your sync folder path
+# SYNC_FOLDER_PATH=/path/to/your/sync/folder
+```
+
+### Step 3: Configure Sync Folder (Optional)
+Some skills auto-sync reports to a user folder. Set this in your `.env` file:
+
+```bash
+SYNC_FOLDER_PATH=/Users/yourname/Downloads/sync/Dir4Openclaw
+```
+
+**Note**: The `.env` file is gitignored and will NOT be uploaded to the repository.
 
 ### Method 2: Install Individual Skills
 ```bash

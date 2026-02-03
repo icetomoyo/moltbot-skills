@@ -13,6 +13,9 @@ const { execSync } = require('child_process');
 const SKILL_DIR = __dirname;
 const WORKSPACE = process.env.WORKSPACE || '/Users/icetomoyo/clawd';
 
+// Load config for sync folder
+const { ensureSyncFolder } = require('../../config-loader');
+
 // Load dynamic hot topics from hot-topic-vocabulary skill
 function loadDynamicHotTopics() {
   try {
@@ -409,17 +412,16 @@ async function main() {
     fs.writeFileSync(mdPath, fullReport, 'utf8');
     console.log(`\n✅ Full report: ${mdPath}`);
     
-    // Also save to sync folder for user access
-    const SYNC_FOLDER = '/Users/icetomoyo/Downloads/同步空间/Dir4Openclaw';
-    try {
-      if (!fs.existsSync(SYNC_FOLDER)) {
-        fs.mkdirSync(SYNC_FOLDER, { recursive: true });
+    // Also save to sync folder for user access (from config)
+    const syncFolder = ensureSyncFolder();
+    if (syncFolder) {
+      try {
+        const syncPath = path.join(syncFolder, `papers-${getDateString(date)}.md`);
+        fs.writeFileSync(syncPath, fullReport, 'utf8');
+        console.log(`✅ Synced to: ${syncPath}`);
+      } catch (e) {
+        console.warn(`⚠️  Could not sync to folder: ${e.message}`);
       }
-      const syncPath = path.join(SYNC_FOLDER, `papers-${getDateString(date)}.md`);
-      fs.writeFileSync(syncPath, fullReport, 'utf8');
-      console.log(`✅ Synced to: ${syncPath}`);
-    } catch (e) {
-      console.warn(`⚠️  Could not sync to folder: ${e.message}`);
     }
     
     const whatsappSummary = generateWhatsAppSummary(featured);
