@@ -19,96 +19,89 @@ if (!fs.existsSync(OUTPUT_DIR)) {
 
 // Hot topics tracking - EXPANDED with more categories
 const HOT_TOPICS = {
-  ai: ['GPT-5', 'GPT-5o', 'o3', 'o3 mini', 'o1 pro', 'o1', 'Operator',
-       'Claude 4', 'Claude 4 Opus', 'Claude 4 Sonnet', 'Claude 3.7', 'Claude Code',
-       'Gemini 2.0', 'Gemini 2.5', 'Gemini Flash', 'Gemini Ultra', 'Astra',
-       'DeepSeek-V3', 'DeepSeek-V3.2', 'DeepSeek-V4', 'DeepSeek-R1', 'DeepSeek-R2', 'DeepSeek-Coder',
-       'Llama 4', 'Llama 4 Scout', 'Llama 4 Maverick', 'Llama 3.3', 'Llama 3.2',
-       'Grok 3', 'Grok 3 mini', 'xAI',
-       'Kimi k1.5', 'Kimi k1.6', 'Moonshot',
-       'Qwen 2.5', 'Qwen 3', 'Qwen 3 MoE', 'Qwq-32B',
-       'Command R+', 'Cohere',
-       'Phi-4', 'Phi-4 mini',
-       'Gemma 2', 'Gemma 3', 'Gemma 27B',
-       'Nemotron', 'NVLM', 'Mamba', 'RWKV'],
-  
-  robotics: ['Figure 02', 'Figure 03', 'Figure AI', 'Helix', 'Figure',
-             'Optimus Gen 2', 'Optimus Gen 3', 'Tesla Bot', 'Tesla Optimus',
-             'Unitree G1', 'Unitree H1', 'Unitree B2', 'Unitree Go2', 'Unitree',
-             'Boston Dynamics Atlas', 'Spot', 'Stretch', 'Digit',
-             'Agility Robotics', 'Fourier GR-1', 'Fourier GR-2', 'Fourier',
-             'Apptronik Apollo', '1X Neo', '1X Eve', 'Clone Robotics',
-             'MenteeBot', 'Astribot S1', 'Beyond Imagination',
-             'humanoid', 'humanoid robot', 'bipedal', 'quadruped'],
-  
-  vla: ['OpenVLA', 'OpenVLA 7B', 'π0', 'pi-zero', 'pi0', 'pi-zero model',
-        'RT-2', 'RT-X', 'RT-Trajectory', 'RT-Sketch', 'RT-Play',
-        'Octo', 'Octo Model', 'RDT', 'RDT-1B',
-        '3D Diffusion Policy', 'Diffusion Policy',
-        'ACT', 'Aloha', 'Aloha 2', 'Mobile ALOHA',
-        'VLA', 'Vision Language Action', 'vision-language-action',
-        'robot learning', 'imitation learning', 'behavior cloning',
-        'sim-to-real', 'sim2real', 'teleoperation', 'teleop'],
-  
-  worldModels: ['JEPA', 'I-JEPA', 'V-JEPA', 'Video JEPA',
-                'Sora', 'Sora Turbo', 'OpenAI Sora',
-                'DreamerV3', 'Dreamer v3', 'Dreamer',
-                'UniWorld', 'GAIA-1', 'World Model', 'world models',
-                'physical world model', 'world simulator'],
-  
-  agents: ['AI Agent', 'AI Agents', 'multi-agent', 'agentic AI',
-           'AutoGPT', 'Auto-GPT', 'BabyAGI',
-           'Devin', 'Cognition Devin', 'AI software engineer',
-           'Cursor', 'Cursor AI', 'Cursor editor',
-           'GitHub Copilot', 'Copilot', 'Codeium',
-           'Claude Computer Use', 'computer use', 'Operator AI',
-           'tool use', 'function calling', 'API calling',
-           'browser automation', 'web automation'],
-  
-  multimodal: ['multimodal', 'multimodal model', 'any-to-any',
-               'vision language model', 'VLM', 'image generation',
-               'video generation', 'text-to-video', 'text-to-image',
-               'Runway', 'Runway Gen-3', 'Pika', 'Pika Labs',
-               'Veo', 'Google Veo', 'Luma AI', 'Dream Machine',
-               'Midjourney', 'Stable Diffusion', 'SDXL', 'FLUX',
-               'DALL-E 3', 'DALL-E', 'Imagen', 'Imagen 3',
-               'voice cloning', 'TTS', 'text-to-speech',
-               'music generation', 'audio generation'],
-  
-  infra: ['LLM training', 'model training', 'pre-training',
-          'fine-tuning', 'LoRA', 'QLoRA', 'PEFT',
-          'quantization', 'GGUF', 'AWQ', 'GPTQ',
-          'model distillation', 'knowledge distillation',
-          'inference optimization', 'vLLM', 'TensorRT-LLM',
-          'model deployment', 'model serving', 'API',
-          'GPU cluster', 'H100', 'A100', 'GPU shortage',
-          'Mixture of Experts', 'MoE', 'sparse attention',
-          'long context', 'context window', '1M context',
-          'RAG', 'retrieval augmented', 'vector database',
-          'embedding', 'vector search', 'semantic search'],
-  
-  safety: ['AI safety', 'AI alignment', 'RLHF', 'RLAIF',
-           'constitutional AI', 'AI ethics', 'responsible AI',
-           'model interpretability', 'mechanistic interpretability',
-           'jailbreak', 'prompt injection', 'adversarial attack',
-           'model evaluation', 'benchmark', 'leaderboard',
-           'MMLU', 'HumanEval', 'GSM8K', 'MATH',
-           'hallucination', 'factuality', 'truthfulness'],
-  
-  opensource: ['open source', 'open-source model', 'open weights',
-               'HuggingFace', 'HF', 'HF Transformers',
-               'Llama.cpp', 'Ollama', 'LocalAI',
-               'GitHub', 'open source release', 'model license',
-               'community model', 'fine-tuned model', 'LoRA weights'],
-  
-  apps: ['coding assistant', 'code generation', 'code completion',
-         'AI tutor', 'education AI', 'learning assistant',
-         'AI doctor', 'medical AI', 'healthcare AI', 'clinical AI',
-         'AI lawyer', 'legal AI', 'contract review',
-         'AI finance', 'trading bot', 'quant trading', 'FinGPT',
-         'AI customer service', 'chatbot', 'virtual assistant',
-         'content generation', 'copywriting AI', 'marketing AI',
-         'AI art', 'AI music', 'AI video', 'creative AI']
+  "ai": [
+    "GPT",
+    "Claude",
+    "Llama",
+    "Gemini",
+    "DeepSeek",
+    "Grok",
+    "Kimi",
+    "Qwen",
+    "Mistral",
+    "Phi"
+  ],
+  "robotics": [
+    "robotics",
+    "Figure",
+    "Optimus",
+    "Atlas",
+    "Spot",
+    "Digit",
+    "Unitree",
+    "humanoid",
+    "bipedal"
+  ],
+  "agents": [
+    "agents",
+    "Agent",
+    "AutoGPT",
+    "Devin",
+    "Cursor",
+    "Copilot",
+    "Computer Use"
+  ],
+  "vla": [
+    "practical",
+    "interaction",
+    "VLA",
+    "OpenVLA",
+    "RT-2",
+    "Diffusion Policy",
+    "ACT",
+    "Aloha"
+  ],
+  "worldModels": [
+    "JEPA",
+    "Sora",
+    "Dreamer",
+    "World Model"
+  ],
+  "multimodal": [
+    "Multimodal",
+    "VLM",
+    "Image Generation",
+    "Video Generation"
+  ],
+  "infra": [
+    "Training",
+    "Inference",
+    "LoRA",
+    "Quantization",
+    "RAG",
+    "MoE"
+  ],
+  "safety": [
+    "Safety",
+    "Alignment",
+    "RLHF",
+    "Interpretability"
+  ],
+  "opensource": [
+    "open-source",
+    "Open Source",
+    "HuggingFace",
+    "GitHub",
+    "Llama.cpp"
+  ],
+  "apps": [
+    "decoding",
+    "Coding",
+    "Medical",
+    "Legal",
+    "Finance",
+    "Education"
+  ]
 };
 
 // Platform configurations
@@ -449,42 +442,17 @@ function aggregateItems(allItems) {
     byPlatform[p].sort((a, b) => b.score - a.score);
   }
   
-  const topicGroups = {};
+  // Rank individual items by score, not grouped by topic
+  const rankedItems = allItems
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 20);
   
-  allItems.forEach(item => {
-    const keyTopics = item.hotTopics?.map(h => h.topic) || [];
-    if (keyTopics.length === 0) return;
-    
-    const key = keyTopics[0];
-    if (!topicGroups[key]) {
-      topicGroups[key] = {
-        topic: key,
-        category: item.hotTopics[0].category,
-        items: [],
-        combinedScore: 0,
-        platforms: new Set()
-      };
-    }
-    
-    topicGroups[key].items.push(item);
-    topicGroups[key].combinedScore += item.score;
-    topicGroups[key].platforms.add(item.platform);
-  });
-  
-  const ranked = Object.values(topicGroups)
-    .map(g => ({
-      ...g,
-      platforms: Array.from(g.platforms),
-      itemCount: g.items.length
-    }))
-    .sort((a, b) => b.combinedScore - a.combinedScore);
-  
-  return { byPlatform, ranked: ranked.slice(0, 20) };
+  return { byPlatform, rankedItems };
 }
 
-// Generate WhatsApp summary - ENHANCED version
+// Generate WhatsApp summary - Show individual items instead of grouped topics
 function generateWhatsAppSummary(data) {
-  const { byPlatform, ranked } = data;
+  const { byPlatform, rankedItems } = data;
   
   let msg = `🔥 AI热点监控 ${new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'})}\n`;
   
@@ -493,45 +461,75 @@ function generateWhatsAppSummary(data) {
     .join(' | ');
   msg += `📊 数据源: ${platformSummary}\n\n`;
   
-  // TOP 5 with detailed info
-  const topTopics = ranked.slice(0, 5);
-  if (topTopics.length > 0) {
-    msg += `🏆 TOP ${topTopics.length} 热点话题\n`;
+  // TOP 8 individual items with full details
+  const topItems = rankedItems.slice(0, 8);
+  if (topItems.length > 0) {
+    msg += `🏆 TOP ${topItems.length} 热点内容\n`;
     msg += `━━━━━━━━━━━━━━━━━━━━━━\n`;
     
-    topTopics.forEach((topic, i) => {
-      const fire = '🔥'.repeat(Math.min(Math.ceil(topic.combinedScore / 15), 3));
-      const platforms = topic.platforms.slice(0, 3).join(', ');
+    topItems.forEach((item, i) => {
+      const fire = '🔥'.repeat(Math.min(Math.ceil(item.score / 3), 3)) || '⭐';
+      const platform = PLATFORMS[item.platform.toLowerCase()]?.emoji || '•';
       
-      msg += `\n${i + 1}️⃣ 【${topic.topic}】${fire}\n`;
-      msg += `   📈 热度: ${topic.combinedScore.toFixed(1)}分 | 📊 ${platforms} | 📝 ${topic.itemCount}条\n`;
+      msg += `\n${i + 1}️⃣ ${fire} [${item.platform}]\n`;
       
-      // Show top 2 items with full titles
-      const sortedItems = topic.items.sort((a, b) => b.score - a.score).slice(0, 2);
-      sortedItems.forEach((item, idx) => {
-        if (item.title) {
-          // Show full title but limit to 80 chars
-          const displayTitle = item.title.length > 80 
-            ? item.title.substring(0, 80) + '...' 
-            : item.title;
-          msg += `   💬 ${idx + 1}. ${displayTitle}\n`;
-          if (item.url) {
-            msg += `   🔗 ${item.url}\n`;
-          }
-        }
-      });
+      // Title
+      const displayTitle = item.title.length > 100 
+        ? item.title.substring(0, 100) + '...' 
+        : item.title;
+      msg += `📌 ${displayTitle}\n`;
+      
+      // Description/Context
+      let description = '';
+      if (item.platform === 'Reddit') {
+        description = `👍 ${item.upvotes} upvotes | 💬 ${item.comments} comments | r/${item.subreddit}`;
+      } else if (item.platform === 'HackerNews') {
+        description = `👍 ${item.points} points | 💬 ${item.comments} comments`;
+      } else if (item.platform === 'HuggingFace') {
+        description = `❤️ ${item.likes} likes`;
+      } else if (item.platform === 'arXiv') {
+        description = `👤 ${item.author}`;
+      }
+      
+      if (description) {
+        msg += `📊 ${description}\n`;
+      }
+      
+      // Hot topics detected
+      if (item.hotTopics && item.hotTopics.length > 0) {
+        const topics = item.hotTopics.slice(0, 3).map(h => h.topic).join(', ');
+        msg += `🏷️ ${topics}\n`;
+      }
+      
+      // URL
+      if (item.url) {
+        msg += `🔗 ${item.url}\n`;
+      }
     });
     msg += `\n━━━━━━━━━━━━━━━━━━━━━━\n\n`;
   }
   
-  // Other hot topics
-  const otherTopics = ranked.slice(5, 12);
-  if (otherTopics.length > 0) {
-    msg += `📌 其他关注话题:\n`;
-    otherTopics.forEach((t, i) => {
-      msg += `   ${i + 6}. ${t.topic} (${t.itemCount}条)\n`;
+  // Quick summary of hot topics
+  const allTopics = {};
+  rankedItems.forEach(item => {
+    if (item.hotTopics) {
+      item.hotTopics.forEach(h => {
+        allTopics[h.topic] = (allTopics[h.topic] || 0) + 1;
+      });
+    }
+  });
+  
+  const sortedTopics = Object.entries(allTopics)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 8);
+  
+  if (sortedTopics.length > 0) {
+    msg += `📌 热门关键词:\n`;
+    sortedTopics.forEach(([topic, count], i) => {
+      msg += `   ${topic}(${count}) `;
+      if ((i + 1) % 4 === 0) msg += '\n';
     });
-    msg += `\n`;
+    msg += `\n\n`;
   }
   
   msg += `⏰ 更新时间: ${new Date().toLocaleString('zh-CN')}`;
