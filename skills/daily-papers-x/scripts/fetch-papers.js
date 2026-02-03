@@ -360,11 +360,19 @@ function generateFullReport(top20, featured, date, hoursBack) {
 
 function generateWhatsAppSummary(featured) {
   if (!featured || !featured.topPick) return `📚 Daily AI Papers - ${getDateString()}\n\n⚠️ No featured papers today.`;
-  let msg = `📚 Daily AI Papers - ${getDateString()}\n🔥 Enhanced Edition - Featured Selection\n\n`;
+  
   const tp = featured.topPick;
-  msg += `🏆 TOP PICK\n━━━━━━━━━━━━━━━━━━━━━━\n📌 ${tp.title}\n\n🔥 Trending: ${tp.trendingScore}/15\n📁 ${tp.researchCategory}\n`;
+  let msg = `\n`;
+  msg += `╔════════════════════════════════════╗\n`;
+  msg += `║      ⭐⭐⭐ TOP PICK ⭐⭐⭐        ║\n`;
+  msg += `╚════════════════════════════════════╝\n\n`;
+  msg += `📌 ${tp.title}\n\n`;
+  msg += `🔥 热度: ${tp.trendingScore}/15\n`;
+  msg += `📁 ${tp.researchCategory}\n`;
   if (tp.trendingSignals?.length) msg += `📈 ${tp.trendingSignals.slice(0, 3).join(', ')}\n`;
-  msg += `🔗 ${tp.url}\n━━━━━━━━━━━━━━━━━━━━━━\n\n⭐ Featured Papers:\n\n`;
+  msg += `🔗 ${tp.url}\n`;
+  msg += `════════════════════════════════════\n\n`;
+  msg += `📚 其他精选:\n\n`;
   if (featured.mostTrending) msg += `🔥 最有流量\n${featured.mostTrending.title.substring(0, 70)}${featured.mostTrending.title.length > 70 ? '...' : ''}\n🔗 ${featured.mostTrending.url}\n\n`;
   if (featured.mostInteresting) msg += `🎨 最有趣\n${featured.mostInteresting.title.substring(0, 70)}${featured.mostInteresting.title.length > 70 ? '...' : ''}\n🔗 ${featured.mostInteresting.url}\n\n`;
   if (featured.mostDeep) msg += `🧠 最有深度\n${featured.mostDeep.title.substring(0, 70)}${featured.mostDeep.title.length > 70 ? '...' : ''}\n🔗 ${featured.mostDeep.url}\n\n`;
