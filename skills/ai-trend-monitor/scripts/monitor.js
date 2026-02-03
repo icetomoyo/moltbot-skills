@@ -270,7 +270,7 @@ async function fetchReddit() {
             title: data.title,
             url: `https://reddit.com${data.permalink}`,
             author: `u/${data.author}`,
-            score: data.score / 50 + 3, // No cap, allow scores above 10
+            score: data.score / 100 + 5, // Reduced weight: 100 upvotes = 6 points, base 5
             hotTopics: detectHotTopics(data.title + ' ' + (data.selftext || '')),
             timestamp: new Date(data.created_utc * 1000).toISOString(),
             platform: 'Reddit',
@@ -349,7 +349,7 @@ async function fetchHackerNews() {
               title: hit.title,
               url: hitUrl,
               author: hit.author,
-              score: hit.points / 40 + 2, // No cap, allow scores above 10
+              score: hit.points / 80 + 4, // Reduced weight: 640 points = 12 points, base 4
               hotTopics: detectHotTopics(hit.title + ' ' + (hit.story_text || '')),
               timestamp: hit.created_at,
               platform: 'HackerNews',

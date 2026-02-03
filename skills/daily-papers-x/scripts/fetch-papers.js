@@ -341,16 +341,16 @@ function generateFullReport(top20, featured, date, hoursBack) {
   topSignals.forEach(([signal, count]) => { md += `- **${signal}**: ${count} papers\n`; });
   if (featured?.topPick) {
     const tp = featured.topPick;
-    md += `\n---\n\n## 🏆 TOP PICK\n\n### ${tp.title}\n\n**Authors**: ${tp.authors.join(', ')}  \n**Source**: ${tp.source} | **Category**: ${tp.researchCategory}  \n**Published**: ${new Date(tp.published).toLocaleDateString()}  \n**🔥 Trending Score**: ${tp.trendingScore}/15  \n`;
+    md += `\n---\n\n## 🏆 TOP PICK\n\n### ${tp.title}\n\n**Authors**: ${tp.authors.join(', ')}  \n**Source**: ${tp.source} | **Category**: ${tp.researchCategory}  \n**Published**: ${new Date(tp.published).toLocaleDateString()}  \n**🔥 Trending Score**: ${tp.trendingScore}  \n`;
     if (tp.trendingSignals?.length) md += `**Hot Signals**: ${tp.trendingSignals.slice(0, 5).join(', ')}  \n`;
     md += `\n${tp.abstract}\n\n🔗 [Paper](${tp.url})\n`;
   }
   if (featured) {
     md += `\n---\n\n## ⭐ Featured Papers\n\n`;
-    if (featured.mostTrending) { md += `### 🔥 最有流量 (Most Trending)\n\n**${featured.mostTrending.title}**\n\nTrending Score: ${featured.mostTrending.trendingScore}/15  \nSignals: ${featured.mostTrending.trendingSignals?.slice(0, 3).join(', ') || 'N/A'}  \n${featured.mostTrending.abstract.substring(0, 300)}...\n\n🔗 ${featured.mostTrending.url}\n\n---\n\n`; }
-    if (featured.mostInteresting) { md += `### 🎨 最有趣 (Most Interesting)\n\n**${featured.mostInteresting.title}**\n\nTrending Score: ${featured.mostInteresting.trendingScore}/15  \n${featured.mostInteresting.abstract.substring(0, 300)}...\n\n🔗 ${featured.mostInteresting.url}\n\n---\n\n`; }
-    if (featured.mostDeep) { md += `### 🧠 最有深度 (Most Deep)\n\n**${featured.mostDeep.title}**\n\nTrending Score: ${featured.mostDeep.trendingScore}/15  \n${featured.mostDeep.abstract.substring(0, 300)}...\n\n🔗 ${featured.mostDeep.url}\n\n---\n\n`; }
-    if (featured.mostValuable) { md += `### 💎 最有价值 (Most Valuable)\n\n**${featured.mostValuable.title}**\n\nTrending Score: ${featured.mostValuable.trendingScore}/15  \n${featured.mostValuable.abstract.substring(0, 300)}...\n\n🔗 ${featured.mostValuable.url}\n`; }
+    if (featured.mostTrending) { md += `### 🔥 最有流量 (Most Trending)\n\n**${featured.mostTrending.title}**\n\nTrending Score: ${featured.mostTrending.trendingScore}  \nSignals: ${featured.mostTrending.trendingSignals?.slice(0, 3).join(', ') || 'N/A'}  \n${featured.mostTrending.abstract.substring(0, 300)}...\n\n🔗 ${featured.mostTrending.url}\n\n---\n\n`; }
+    if (featured.mostInteresting) { md += `### 🎨 最有趣 (Most Interesting)\n\n**${featured.mostInteresting.title}**\n\nTrending Score: ${featured.mostInteresting.trendingScore}  \n${featured.mostInteresting.abstract.substring(0, 300)}...\n\n🔗 ${featured.mostInteresting.url}\n\n---\n\n`; }
+    if (featured.mostDeep) { md += `### 🧠 最有深度 (Most Deep)\n\n**${featured.mostDeep.title}**\n\nTrending Score: ${featured.mostDeep.trendingScore}  \n${featured.mostDeep.abstract.substring(0, 300)}...\n\n🔗 ${featured.mostDeep.url}\n\n---\n\n`; }
+    if (featured.mostValuable) { md += `### 💎 最有价值 (Most Valuable)\n\n**${featured.mostValuable.title}**\n\nTrending Score: ${featured.mostValuable.trendingScore}  \n${featured.mostValuable.abstract.substring(0, 300)}...\n\n🔗 ${featured.mostValuable.url}\n`; }
   }
   md += `\n---\n\n## 📋 Top 20 Papers\n\n`;
   top20.forEach((p, i) => { md += `${i + 1}. **${p.title}**\n   🔥 ${p.trendingScore} | ${p.researchCategory} | ${new Date(p.published).toLocaleDateString()}\n   🔗 ${p.url}\n\n`; });
@@ -367,7 +367,7 @@ function generateWhatsAppSummary(featured) {
   msg += `║      ⭐⭐⭐ TOP PICK ⭐⭐⭐        ║\n`;
   msg += `╚════════════════════════════════════╝\n\n`;
   msg += `📌 ${tp.title}\n\n`;
-  msg += `🔥 热度: ${tp.trendingScore}/15\n`;
+  msg += `🔥 热度: ${tp.trendingScore}\n`;
   msg += `📁 ${tp.researchCategory}\n`;
   if (tp.trendingSignals?.length) msg += `📈 ${tp.trendingSignals.slice(0, 3).join(', ')}\n`;
   msg += `🔗 ${tp.url}\n`;
