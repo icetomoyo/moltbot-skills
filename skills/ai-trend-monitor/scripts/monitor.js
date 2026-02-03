@@ -44,6 +44,8 @@ const HOT_TOPICS = {
   ],
   "agents": [
     "agents",
+    "multi-agent",
+    "agentic",
     "Agent",
     "AutoGPT",
     "Devin",
@@ -52,8 +54,8 @@ const HOT_TOPICS = {
     "Computer Use"
   ],
   "vla": [
-    "practical",
-    "interaction",
+    "contact",
+    "action",
     "VLA",
     "OpenVLA",
     "RT-2",
@@ -74,6 +76,7 @@ const HOT_TOPICS = {
     "Video Generation"
   ],
   "infra": [
+    "exploration",
     "Training",
     "Inference",
     "LoRA",
@@ -88,14 +91,13 @@ const HOT_TOPICS = {
     "Interpretability"
   ],
   "opensource": [
-    "open-source",
+    "github.com",
     "Open Source",
     "HuggingFace",
     "GitHub",
     "Llama.cpp"
   ],
   "apps": [
-    "decoding",
     "Coding",
     "Medical",
     "Legal",
@@ -135,6 +137,12 @@ const PLATFORMS = {
     emoji: '🐦',
     enabled: true,
     fetch: fetchNitter
+  },
+  github: {
+    name: 'GitHub',
+    emoji: '🐙',
+    enabled: true,
+    fetch: fetchGitHub
   }
 };
 
@@ -417,6 +425,79 @@ async function fetchNitter() {
   return results.slice(0, 15);
 }
 
+// Fetch from GitHub API
+async function fetchGitHub() {
+  console.log('  🐙 Fetching GitHub...');
+  try {
+    const axios = require('axios');
+    
+    // Search for trending AI repos created/updated in last 7 days
+    const queries = [
+      'AI OR LLM OR "machine learning" OR "deep learning" OR "neural network"',
+      'agent OR agents OR "AI agent" OR "multi-agent"',
+      'robotics OR "humanoid robot" OR VLA OR "vision language"',
+      'transformer OR GPT OR LLaMA OR "large language model"'
+    ];
+    
+    const results = [];
+    const seenRepos = new Set();
+    
+    for (const query of queries) {
+      try {
+        // Search repositories
+        const url = `https://api.github.com/search/repositories?q=${encodeURIComponent(query)}+created:>${getDateWeekAgo()}&sort=stars&order=desc&per_page=5`;
+        
+        const response = await axios.get(url, { 
+          timeout: 10000,
+          headers: {
+            'Accept': 'application/vnd.github.v3+json',
+            'User-Agent': 'AI-Trend-Monitor'
+          }
+        });
+        
+        const repos = response.data?.items || [];
+        
+        for (const repo of repos) {
+          if (seenRepos.has(repo.id)) continue;
+          seenRepos.add(repo.id);
+          
+          // Calculate score based on stars and recent activity
+          const stars = repo.stargazers_count || 0;
+          const forks = repo.forks_count || 0;
+          const score = Math.min(stars / 100 + forks / 50 + 5, 20); // Cap at 20 for now
+          
+          results.push({
+            title: `${repo.full_name}: ${repo.description || 'No description'}`,
+            url: repo.html_url,
+            author: repo.owner.login,
+            score: score,
+            hotTopics: detectHotTopics(repo.name + ' ' + (repo.description || '') + ' ' + (repo.topics?.join(' ') || '')),
+            timestamp: repo.created_at || new Date().toISOString(),
+            platform: 'GitHub',
+            stars: stars,
+            forks: forks,
+            language: repo.language
+          });
+        }
+      } catch (e) {
+        // Continue with next query
+      }
+    }
+    
+    console.log(`   ✅ ${results.length} 条`);
+    return results.slice(0, 15);
+  } catch (e) {
+    console.error('    ❌ GitHub failed:', e.message);
+    return [];
+  }
+}
+
+function getDateWeekAgo() {
+  const date = new Date();
+  date.setDate(date.getDate() - 7);
+  return date.toISOString().split('T')[0];
+}
+
 // Detect hot topics in text
 function detectHotTopics(text) {
   if (!text) return [];
@@ -495,6 +576,8 @@ function generateWhatsAppSummary(data) {
         description = `❤️ ${item.likes} likes`;
       } else if (item.platform === 'arXiv') {
         description = `👤 ${item.author}`;
+      } else if (item.platform === 'GitHub') {
+        description = `⭐ ${item.stars} stars | 🍴 ${item.forks} forks${item.language ? ' | 📝 ' + item.language : ''}`;
       }
       
       if (description) {
