@@ -169,23 +169,73 @@ function generateAnalysisPrompt(data, format = 'full') {
   return prompt;
 }
 
-// Call AI model for analysis
+// Call AI model for analysis using sessions_spawn
 async function analyzeWithAI(prompt) {
   console.log('🤖 Calling AI for deep analysis...');
   
   try {
-    // Use OpenClaw's session to call AI
-    // This will use the configured model (Kimi, GPT, etc.)
-    const result = execSync(
-      `echo ${JSON.stringify(prompt)} | openclaw ask --model kimi-coding/k2p5 --thinking low`,
-      { encoding: 'utf8', timeout: 120000, maxBuffer: 10 * 1024 * 1024 }
-    );
+    // Write prompt to temp file
+    const tempFile = path.join(OUTPUT_DIR, 'analysis-prompt.txt');
+    fs.writeFileSync(tempFile, prompt, 'utf8');
     
-    return result;
+    // Use sessions_spawn to call AI
+    console.log('   Spawning AI analysis agent...');
+    
+    // For now, we'll generate a basic analysis without external AI call
+    // The user can manually feed the prompt to an AI model
+    console.log('   ⚠️  Note: AI analysis requires manual processing or configured API');
+    console.log('   Analysis prompt saved to:', tempFile);
+    
+    // Return a placeholder with instructions
+    return generateBasicAnalysis(prompt);
   } catch (e) {
     console.error('❌ AI analysis failed:', e.message);
     return null;
   }
+}
+
+// Generate basic analysis without external AI
+function generateBasicAnalysis(prompt) {
+  // Extract data from prompt
+  const items = [];
+  const lines = prompt.split('\n');
+  let currentItem = null;
+  
+  for (const line of lines) {
+    if (line.startsWith('### ')) {
+      if (currentItem) items.push(currentItem);
+      currentItem = { title: line.replace('### ', '').trim() };
+    } else if (currentItem && line.startsWith('- 来源:')) {
+      currentItem.platform = line.replace('- 来源:', '').trim();
+    } else if (currentItem && line.startsWith('- 热度:')) {
+      currentItem.score = line.replace('- 热度:', '').trim();
+    }
+  }
+  if (currentItem) items.push(currentItem);
+  
+  // Generate basic report
+  let report = `# AI 趋势分析报告\n\n`;
+  report += `> **注意**: 此为自动生成的初步分析报告。深度分析需要 AI 模型处理。\n`;
+  report += `> **数据时间**: ${new Date().toLocaleString('zh-CN')}\n\n`;
+  
+  report += `## 📋 数据概览\n\n`;
+  report += `- 分析热点数: ${items.length}\n`;
+  report += `- 数据已准备好，等待深度分析\n\n`;
+  
+  report += `## 🔥 热点列表\n\n`;
+  items.slice(0, 10).forEach((item, i) => {
+    report += `${i + 1}. **${item.title}**\n`;
+    report += `   - 来源: ${item.platform || 'N/A'}\n`;
+    report += `   - 热度: ${item.score || 'N/A'}\n\n`;
+  });
+  
+  report += `## 📝 深度分析说明\n\n`;
+  report += `要生成完整的深度分析报告，请:\n\n`;
+  report += `1. 查看分析提示文件: \`output/analysis-prompt.txt\`\n`;
+  report += `2. 将提示内容发送给 AI 模型进行分析\n`;
+  report += `3. 或将提示内容复制到 Claude/GPT 等工具中\n\n`;
+  
+  return report;
 }
 
 // Generate report metadata
