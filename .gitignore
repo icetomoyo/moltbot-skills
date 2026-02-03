@@ -48,5 +48,9 @@ skills/**/output/
 # Personal setup files
 GITHUB_SETUP.md
 
+# Skills not managed in version control
+skills/agent-browser/
+skills/asuna_companion/
+
 # OS
 Thumbs.db

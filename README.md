@@ -52,20 +52,14 @@ Dynamic hot topic vocabulary analyzer - updates daily with emerging AI/tech keyw
 - **Status**: ✅ Ready
 
 ### Beautiful Mermaid
-Render Mermaid diagrams as beautiful SVGs or ASCII art.
+Render Mermaid diagrams as beautiful SVGs or ASCII art. Supports flowcharts, state diagrams, sequence diagrams, class diagrams, ER diagrams with 15+ professional themes.
 
 - **Path**: `skills/beautiful-mermaid/`
-- **Features**: 15+ themes, SVG/ASCII output, auto-installation
-- **Status**: ✅ Ready
-
-### Agent Browser
-A fast Rust-based headless browser automation CLI for web scraping and automation.
-
-- **Path**: `skills/agent-browser/`
 - **Features**: 
-  - Rust-based headless browser
-  - Navigate, click, type, snapshot
-  - Structured command interface
+  - 15+ themes (Tokyo Night, Dracula, Catppuccin, Nord, etc.)
+  - SVG and ASCII output formats
+  - Multiple diagram types support
+  - Auto-installation
 - **Status**: ✅ Ready
 
 ## 📦 Installation
@@ -91,16 +85,19 @@ See [SKILL_TEMPLATE.md](SKILL_TEMPLATE.md) for creating your own skills.
 
 ```
 openclaw-skills/
-├── skills/                       # All skills
+├── skills/                       # All skills (managed)
 │   ├── ai-trend-monitor/        # AI trend monitoring (6 sources)
 │   ├── ai-trend-analyzer/       # Deep trend analysis & reports
 │   ├── daily-papers-x/          # AI papers curator
 │   ├── hot-topic-vocabulary/    # Dynamic vocabulary
-│   ├── beautiful-mermaid/       # Diagram renderer
-│   └── agent-browser/           # Browser automation
+│   └── beautiful-mermaid/       # Diagram renderer
 ├── releases/                     # Packaged .skill files
 ├── .gitignore                    # Privacy protection
 └── README.md                     # This file
+
+# Local-only skills (not in version control)
+# - skills/agent-browser/        # Browser automation
+# - skills/asuna_companion/      # Personal companion
 ```
 
 ## 🔒 Privacy & Security
