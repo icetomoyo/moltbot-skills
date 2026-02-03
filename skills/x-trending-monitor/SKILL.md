@@ -7,7 +7,15 @@ metadata: {"openclaw":{"emoji":"🔥","requires":{"bins":["node"]},"install":[{"
 
 # X Trending Monitor
 
-监控 X.com (Twitter) 上关于 AI、机器人、具身智能、VLA、World Model 的热门推文。
+⚠️ **重要提示: 此技能目前无法自动运行**
+
+X.com (Twitter) 的反爬虫机制阻止了自动化数据抓取。此技能需要手动配合浏览器使用。
+
+## 现状
+
+❌ **无法自动抓取**: X.com 需要登录 + JavaScript 渲染 + 频繁触发验证码
+✅ **手动查询指南**: 提供搜索链接，需手动访问
+✅ **建议替代方案**: 使用 `ai-trend-monitor` (聚合 arXiv, Reddit, HN 等无需登录的源)
 
 ## 监控领域
 
@@ -25,28 +33,38 @@ metadata: {"openclaw":{"emoji":"🔥","requires":{"bins":["node"]},"install":[{"
 - Vision-Language-Action (VLA) models
 - World Models
 - Sim-to-real transfer
-- Robot manipulation
 
-## Usage
+## 手动使用方法
 
-### 手动运行
+### 方式 1: 直接使用 X.com 搜索
+
+访问以下链接（需登录 X.com）:
+
+| 领域 | 搜索链接 |
+|------|----------|
+| AI/LLM | https://x.com/search?q=AI%20OR%20LLM%20min_faves%3A100%20lang%3Aen&f=live |
+| Robotics | https://x.com/search?q=robotics%20OR%20humanoid%20min_faves%3A50%20lang%3Aen&f=live |
+| VLA | https://x.com/search?q=VLA%20OR%20OpenVLA%20min_faves%3A30%20lang%3Aen&f=live |
+| World Model | https://x.com/search?q=world%20model%20OR%20JEPA%20min_faves%3A30%20lang%3Aen&f=live |
+
+### 方式 2: 使用脚本获取搜索链接
 
 ```bash
-# 运行监控（使用浏览器自动化获取 X.com）
 node skills/x-trending-monitor/scripts/fetch-x-trending.js
-
-# 输出
-# - 推文列表: skills/x-trending-monitor/output/tweets-YYYY-MM-DD-HHMM.json
-# - 摘要报告: skills/x-trending-monitor/output/summary-YYYY-MM-DD-HHMM.md
 ```
 
-### 使用方式
+此脚本会输出搜索链接，**不会自动抓取数据**。
 
-用户说类似以下指令时调用：
-- "帮我看看 X 上有什么热门 AI 消息"
-- "监控一下 X.com 的最新推文"
-- "关注一下 Twitter 上的 AI 热点"
-- "看看现在 AI 领域有什么热门讨论"
+### 方式 3: 使用 OpenClaw Browser 工具
+
+1. 确保 Chrome 已登录 X.com
+2. 附加 OpenClaw Browser Relay 扩展
+3. 执行:
+```
+browser action=open profile=chrome targetUrl="https://x.com/search?q=AI%20min_faves%3A100&f=live"
+browser action=snapshot profile=chrome refs=aria
+```
+4. 从 snapshot 中手动提取推文内容
 
 ## Output Format
 

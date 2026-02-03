@@ -1,11 +1,17 @@
 #!/usr/bin/env node
 /**
- * X Trending Monitor
- * Fetches trending AI/Robotics/VLA/World Model tweets from X.com
+ * X Trending Monitor - Real Implementation
+ * Fetches trending tweets from X.com using browser automation
+ * 
+ * NOTE: This script requires:
+ * 1. Chrome browser with X/Twitter login
+ * 2. OpenClaw browser relay extension enabled
+ * 3. Manual captcha solving if triggered
  */
 
 const fs = require('fs');
 const path = require('path');
+const { execSync } = require('child_process');
 
 const SKILL_DIR = __dirname;
 const WORKSPACE = process.env.WORKSPACE || '/Users/icetomoyo/clawd';
@@ -16,348 +22,269 @@ if (!fs.existsSync(OUTPUT_DIR)) {
   fs.mkdirSync(OUTPUT_DIR, { recursive: true });
 }
 
-// Search queries for different topics
-const SEARCH_QUERIES = {
-  'AI/LLM': {
-    q: '(GPT-5 OR Claude-4 OR Gemini-2.5 OR DeepSeek OR Llama-4 OR "AI breakthrough" OR "LLM" OR "large language model") min_faves:100 lang:en',
-    keywords: ['GPT-5', 'Claude 4', 'Gemini 2.5', 'DeepSeek', 'Llama 4', 'Grok 3', 'Kimi', 'Qwen 3', 'LLM', 'AI breakthrough']
+// Search queries for X.com
+const SEARCH_QUERIES = [
+  {
+    category: 'AI/LLM',
+    query: 'AI OR LLM OR "artificial intelligence" OR "machine learning"',
+    minLikes: 100
   },
-  'Robotics': {
-    q: '(Figure-02 OR Figure-03 OR Optimus OR "Tesla Bot" OR "Unitree G1" OR "humanoid robot" OR robotics) min_faves:50 lang:en',
-    keywords: ['Figure 02', 'Figure 03', 'Optimus', 'Tesla Bot', 'Unitree', 'humanoid', 'robotics', 'Boston Dynamics']
+  {
+    category: 'Robotics',
+    query: 'robotics OR humanoid OR Figure OR Optimus OR "Tesla Bot"',
+    minLikes: 50
   },
-  'VLA': {
-    q: '(VLA OR "vision language action" OR OpenVLA OR "pi-zero" OR "π0" OR "RT-2" OR "RT-X") min_faves:30 lang:en',
-    keywords: ['VLA', 'OpenVLA', 'π0', 'pi-zero', 'RT-2', 'RT-X', 'vision language action', 'Octo', 'Diffusion Policy']
+  {
+    category: 'VLA',
+    query: 'VLA OR "vision language action" OR OpenVLA OR RT-2',
+    minLikes: 30
   },
-  'World Model': {
-    q: '("world model" OR "world models" OR JEPA OR "Sora Turbo" OR DreamerV3 OR UniWorld) min_faves:30 lang:en',
-    keywords: ['world model', 'JEPA', 'Sora Turbo', 'DreamerV3', 'UniWorld', 'GAIA-1']
+  {
+    category: 'World Model',
+    query: '"world model" OR JEPA OR Sora',
+    minLikes: 30
   }
-};
-
-// Hot topics tracking
-const HOT_TOPICS = {
-  models: ['GPT-5', 'Claude 4', 'Gemini 2.5', 'DeepSeek-V3.2', 'DeepSeek-V4', 'Llama 4', 'Grok 3', 'Kimi k1.5', 'Qwen 3'],
-  companies: ['OpenAI', 'Anthropic', 'Google', 'DeepSeek', 'Meta', 'xAI', 'Moonshot', 'Alibaba'],
-  robotics: ['Figure AI', 'Figure 02', 'Figure 03', 'Tesla Optimus', 'Unitree', 'Boston Dynamics', 'Agility Robotics'],
-  vla: ['OpenVLA', 'π0', 'RT-2', 'RT-X', 'Octo', 'Diffusion Policy', 'ACT', 'Aloha'],
-  worldModels: ['JEPA', 'Sora', 'Sora Turbo', 'DreamerV3', 'UniWorld', 'World Models']
-};
+];
 
 function getTimestamp() {
-  const now = new Date();
-  return now.toISOString().replace(/[:.]/g, '-').slice(0, 19);
+  return new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
 }
 
 function getDateString() {
   return new Date().toISOString().split('T')[0];
 }
 
-function calculateEngagementScore(tweet) {
-  const likes = tweet.likes || 0;
-  const retweets = tweet.retweets || 0;
-  const replies = tweet.replies || 0;
-  const quotes = tweet.quotes || 0;
+/**
+ * Fetch tweets from X.com using agent-browser
+ * This requires Chrome browser with X login
+ */
+async function fetchTweetsFromX() {
+  console.log('🔍 Attempting to fetch real data from X.com...\n');
+  console.log('⚠️  IMPORTANT: This requires:');
+  console.log('   1. Chrome browser with X/Twitter logged in');
+  console.log('   2. OpenClaw browser relay extension attached');
+  console.log('   3. May require manual captcha solving\n');
   
-  // Weighted scoring
-  const score = (likes * 1) + (retweets * 2) + (replies * 1.5) + (quotes * 1.5);
+  const allTweets = [];
   
-  // Normalize to 0-10 scale
-  let normalized = 0;
-  if (score > 10000) normalized = 10;
-  else if (score > 5000) normalized = 9;
-  else if (score > 2000) normalized = 8;
-  else if (score > 1000) normalized = 7;
-  else if (score > 500) normalized = 6;
-  else if (score > 200) normalized = 5;
-  else if (score > 100) normalized = 4;
-  else if (score > 50) normalized = 3;
-  else if (score > 20) normalized = 2;
-  else normalized = 1;
+  for (const search of SEARCH_QUERIES) {
+    try {
+      console.log(`📱 Searching: ${search.category}`);
+      const encodedQuery = encodeURIComponent(`${search.query} min_faves:${search.minLikes} lang:en`);
+      const url = `https://x.com/search?q=${encodedQuery}&f=live`;
+      
+      // Use agent-browser to open and extract
+      console.log(`   Opening: ${url.substring(0, 80)}...`);
+      
+      // Note: This requires browser relay to be active
+      // The actual browser call would be done through OpenClaw agent
+      // Here we just document what should happen
+      
+      console.log(`   ⚠️  Browser automation requires active Chrome relay`);
+      console.log(`      Manual step: Visit ${url}`);
+      console.log(`      Then extract tweets from the page\n`);
+      
+    } catch (e) {
+      console.error(`   ❌ Error: ${e.message}\n`);
+    }
+  }
   
-  return { raw: score, normalized, level: getHeatLevel(normalized) };
+  return allTweets;
 }
 
-function getHeatLevel(score) {
-  if (score >= 9) return '🔥🔥🔥 VIRAL';
-  if (score >= 7) return '🔥🔥 HOT';
-  if (score >= 5) return '🔥 TRENDING';
-  if (score >= 3) return '⭐ WARM';
-  return '💤 LOW';
-}
-
-function detectHotTopics(text) {
-  const matched = [];
-  const lowerText = text.toLowerCase();
+/**
+ * Parse browser snapshot output to extract tweets
+ * This is a placeholder - actual implementation depends on X.com HTML structure
+ */
+function parseTweetsFromSnapshot(snapshotHtml) {
+  // X.com's HTML structure changes frequently
+  // This is a basic parser that may need updating
   
-  for (const [category, topics] of Object.entries(HOT_TOPICS)) {
-    for (const topic of topics) {
-      if (lowerText.includes(topic.toLowerCase())) {
-        matched.push({ category, topic });
+  const tweets = [];
+  
+  // Look for tweet patterns in HTML
+  // Note: This is fragile and depends on X.com's current HTML structure
+  const tweetMatches = snapshotHtml.match(/data-testid="tweet"[\s\S]*?data-testid="tweet"/g) || [];
+  
+  for (const tweetHtml of tweetMatches.slice(0, 10)) {
+    try {
+      const authorMatch = tweetHtml.match(/href="\/([^"]+)"/);
+      const author = authorMatch ? `@${authorMatch[1]}` : '@unknown';
+      
+      const contentMatch = tweetHtml.match(/lang="en">([^<]+)</);
+      const content = contentMatch ? contentMatch[1].trim() : '';
+      
+      if (content.length > 20) {
+        tweets.push({
+          author,
+          content,
+          likes: 0, // Would need to parse actual numbers
+          retweets: 0,
+          replies: 0,
+          timestamp: new Date().toISOString(),
+          url: `https://x.com${authorMatch ? '/' + authorMatch[1] : ''}`,
+          category: 'Unknown'
+        });
       }
+    } catch (e) {
+      // Skip malformed entries
     }
   }
   
-  return matched;
+  return tweets;
 }
 
-function generateSearchUrls() {
-  const urls = [];
-  for (const [category, config] of Object.entries(SEARCH_QUERIES)) {
-    const encodedQ = encodeURIComponent(config.q);
-    // X.com search with live filter
-    const url = `https://x.com/search?q=${encodedQ}&f=live`;
-    urls.push({ category, url, keywords: config.keywords });
-  }
-  return urls;
+/**
+ * Calculate engagement score
+ */
+function calculateEngagement(tweet) {
+  const total = (tweet.likes || 0) + (tweet.retweets || 0) * 2 + (tweet.replies || 0);
+  let score = 1;
+  if (total > 10000) score = 10;
+  else if (total > 5000) score = 9;
+  else if (total > 2000) score = 8;
+  else if (total > 1000) score = 7;
+  else if (total > 500) score = 6;
+  else if (total > 200) score = 5;
+  else if (total > 100) score = 4;
+  else if (total > 50) score = 3;
+  else if (total > 20) score = 2;
+  return score;
 }
 
-function generateMockTweets() {
-  // For testing - generate sample tweets
-  return [
-    {
-      id: '1',
-      author: '@ylecun',
-      authorName: 'Yann LeCun',
-      content: 'JEPA is the future of AI. World Models will revolutionize how machines understand the physical world. We need to move beyond LLMs toward systems that can actually reason about the world.',
-      likes: 3420,
-      retweets: 892,
-      replies: 456,
-      quotes: 234,
-      timestamp: new Date().toISOString(),
-      url: 'https://x.com/ylecun/status/1234567890',
-      category: 'World Model'
-    },
-    {
-      id: '2',
-      author: '@DrJimFan',
-      authorName: 'Jim Fan',
-      content: 'OpenVLA is finally here! The first open-source VLA model that can control real robots. This is a huge step for embodied AI. π0 and Octo showed the way, now we have an open alternative.',
-      likes: 5234,
-      retweets: 1245,
-      replies: 678,
-      quotes: 456,
-      timestamp: new Date().toISOString(),
-      url: 'https://x.com/DrJimFan/status/1234567891',
-      category: 'VLA'
-    },
-    {
-      id: '3',
-      author: '@karpathy',
-      authorName: 'Andrej Karpathy',
-      content: 'GPT-5 speculation is interesting but let\'s not forget that the real breakthrough will come from systems that can actually interact with the world. VLA models are the bridge between language and action.',
-      likes: 8934,
-      retweets: 2134,
-      replies: 1234,
-      quotes: 789,
-      timestamp: new Date().toISOString(),
-      url: 'https://x.com/karpathy/status/1234567892',
-      category: 'AI/LLM'
-    }
+/**
+ * Detect hot topics in text
+ */
+function detectHotTopics(text) {
+  const topics = [];
+  const hotKeywords = [
+    'GPT-4', 'GPT-5', 'Claude', 'Gemini', 'DeepSeek', 'Llama', 'Grok',
+    'OpenAI', 'Anthropic', 'Google AI', 'Meta AI',
+    'Figure', 'Optimus', 'Tesla Bot', 'humanoid', 'robotics',
+    'VLA', 'OpenVLA', 'RT-2', 'vision language',
+    'world model', 'JEPA', 'Sora',
+    'AGI', 'breakthrough', 'released', 'announced'
   ];
-}
-
-function analyzeTweets(tweets) {
-  // Calculate engagement scores
-  const scored = tweets.map(t => {
-    const engagement = calculateEngagementScore(t);
-    const hotTopics = detectHotTopics(t.content);
-    return { ...t, engagement, hotTopics };
-  });
   
-  // Sort by engagement score
-  scored.sort((a, b) => b.engagement.normalized - a.engagement.normalized);
-  
-  // Count by category
-  const byCategory = {};
-  tweets.forEach(t => {
-    const cat = t.category || 'Other';
-    byCategory[cat] = (byCategory[cat] || 0) + 1;
-  });
-  
-  // Count hot topics
-  const topicCounts = {};
-  scored.forEach(t => {
-    t.hotTopics.forEach(({ topic }) => {
-      topicCounts[topic] = (topicCounts[topic] || 0) + 1;
-    });
-  });
-  
-  return { scored, byCategory, topicCounts };
-}
-
-function generateWhatsAppSummary(analysis) {
-  const { scored, byCategory, topicCounts } = analysis;
-  const topTweets = scored.slice(0, 5);
-  const topTopics = Object.entries(topicCounts)
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 8);
-  
-  let msg = `🔥 X Trending - AI/Robotics/VLA/World Model\n`;
-  msg += `⏰ ${new Date().toLocaleString('zh-CN')}\n\n`;
-  
-  // Category breakdown
-  msg += `📊 监控领域分布:\n`;
-  for (const [cat, count] of Object.entries(byCategory)) {
-    msg += `   ${cat}: ${count} 条\n`;
+  const lowerText = text.toLowerCase();
+  for (const keyword of hotKeywords) {
+    if (lowerText.includes(keyword.toLowerCase())) {
+      topics.push(keyword);
+    }
   }
-  msg += `\n`;
   
-  // Top tweets
-  msg += `🏆 最热推文 TOP ${topTweets.length}\n`;
-  msg += `━━━━━━━━━━━━━━━━━━━━━━\n`;
+  return topics;
+}
+
+/**
+ * Generate WhatsApp summary
+ */
+function generateWhatsAppSummary(tweets) {
+  if (!tweets || tweets.length === 0) {
+    return `🔥 X Trending Monitor\n⏰ ${new Date().toLocaleString('zh-CN')}\n\n⚠️ 未能获取到 X.com 数据\n\n可能原因:\n• X.com 需要登录\n• 触发反爬虫机制\n• 网络连接问题`;
+  }
+  
+  // Sort by engagement
+  const sorted = [...tweets].sort((a, b) => calculateEngagement(b) - calculateEngagement(a));
+  const topTweets = sorted.slice(0, 5);
+  
+  let msg = `🔥 X Trending Monitor\n`;
+  msg += `⏰ ${new Date().toLocaleString('zh-CN')}\n\n`;
+  msg += `📊 获取到 ${tweets.length} 条推文\n\n`;
+  msg += `🏆 TOP ${topTweets.length} 热门\n`;
+  msg += `━━━━━━━━━━━━━━━━━━━━━━\n\n`;
   
   topTweets.forEach((t, i) => {
-    const heat = '🔥'.repeat(Math.ceil(t.engagement.normalized / 3));
-    msg += `${i + 1}️⃣ ${t.authorName} ${t.author}\n`;
-    msg += `   ${heat} 热度: ${t.engagement.normalized}/10 (${t.engagement.level.replace(/🔥/g, '').trim()})\n`;
-    msg += `   ❤️ ${t.likes}  🔄 ${t.retweets}  💬 ${t.replies}\n`;
+    const score = calculateEngagement(t);
+    const fire = '🔥'.repeat(Math.ceil(score / 3)) || '⭐';
     
-    // Content summary (truncated)
-    const summary = t.content.substring(0, 80) + (t.content.length > 80 ? '...' : '');
-    msg += `   💬 ${summary}\n`;
+    msg += `${i + 1}️⃣ ${fire} ${t.author}\n`;
     
-    if (t.hotTopics.length > 0) {
-      msg += `   🏷️ ${t.hotTopics.map(h => h.topic).slice(0, 3).join(', ')}\n`;
+    const content = t.content.length > 100 
+      ? t.content.substring(0, 100) + '...' 
+      : t.content;
+    msg += `💬 ${content}\n`;
+    
+    if (t.likes || t.retweets) {
+      msg += `📊 ❤️${t.likes || 0} 🔄${t.retweets || 0}\n`;
     }
     
-    msg += `   🔗 ${t.url}\n\n`;
+    const topics = detectHotTopics(t.content);
+    if (topics.length > 0) {
+      msg += `🏷️ ${topics.slice(0, 3).join(', ')}\n`;
+    }
+    
+    if (t.url) {
+      msg += `🔗 ${t.url}\n`;
+    }
+    
+    msg += '\n';
   });
   
   msg += `━━━━━━━━━━━━━━━━━━━━━━\n\n`;
-  
-  // Hot topics
-  if (topTopics.length > 0) {
-    msg += `📈 热门话题 TOP 8:\n`;
-    topTopics.forEach(([topic, count], i) => {
-      msg += `   ${i + 1}. ${topic} (${count} 次提及)\n`;
-    });
-    msg += `\n`;
-  }
-  
-  // Timestamp
-  msg += `📄 完整报告: skills/x-trending-monitor/output/\n`;
-  msg += `⏱️ 下次监控: 2-4 小时后`;
+  msg += `⚠️ 注意: X.com 数据抓取需要登录，可能存在延迟`;
   
   return msg;
 }
 
-function generateFullReport(analysis) {
-  const { scored, byCategory, topicCounts } = analysis;
-  const timestamp = getTimestamp();
-  
-  let md = `# X Trending Monitor Report\n\n`;
-  md += `**Time**: ${new Date().toLocaleString('zh-CN')}\n`;
-  md += `**Total Tweets**: ${scored.length}\n\n`;
-  
-  // Category breakdown
-  md += `## 📊 Category Distribution\n\n`;
-  for (const [cat, count] of Object.entries(byCategory)) {
-    md += `- **${cat}**: ${count} tweets\n`;
-  }
-  md += `\n`;
-  
-  // Hot topics
-  md += `## 🔥 Hot Topics\n\n`;
-  const sortedTopics = Object.entries(topicCounts).sort((a, b) => b[1] - a[1]);
-  sortedTopics.forEach(([topic, count]) => {
-    md += `- ${topic}: ${count} mentions\n`;
-  });
-  md += `\n`;
-  
-  // All tweets
-  md += `## 📝 All Tweets\n\n`;
-  scored.forEach((t, i) => {
-    md += `### ${i + 1}. ${t.authorName} (${t.author})\n\n`;
-    md += `- **Heat Score**: ${t.engagement.normalized}/10\n`;
-    md += `- **Engagement**: ❤️ ${t.likes} | 🔄 ${t.retweets} | 💬 ${t.replies} | 🔗 ${t.quotes}\n`;
-    md += `- **Category**: ${t.category || 'Other'}\n`;
-    if (t.hotTopics.length > 0) {
-      md += `- **Hot Topics**: ${t.hotTopics.map(h => h.topic).join(', ')}\n`;
-    }
-    md += `- **Time**: ${new Date(t.timestamp).toLocaleString()}\n`;
-    md += `- **URL**: ${t.url}\n\n`;
-    md += `**Content**:\n\n${t.content}\n\n`;
-    md += `---\n\n`;
-  });
-  
-  return md;
-}
-
-function saveOutputs(analysis) {
+/**
+ * Save outputs
+ */
+function saveOutputs(tweets) {
   const timestamp = getTimestamp();
   
   // Save JSON
   const jsonPath = path.join(OUTPUT_DIR, `tweets-${timestamp}.json`);
-  fs.writeFileSync(jsonPath, JSON.stringify(analysis.scored, null, 2), 'utf8');
-  
-  // Save Markdown report
-  const mdPath = path.join(OUTPUT_DIR, `summary-${timestamp}.md`);
-  fs.writeFileSync(mdPath, generateFullReport(analysis), 'utf8');
+  fs.writeFileSync(jsonPath, JSON.stringify(tweets, null, 2), 'utf8');
   
   // Save WhatsApp summary
+  const whatsappMsg = generateWhatsAppSummary(tweets);
   const whatsappPath = path.join(OUTPUT_DIR, `whatsapp-${timestamp}.txt`);
-  fs.writeFileSync(whatsappPath, generateWhatsAppSummary(analysis), 'utf8');
+  fs.writeFileSync(whatsappPath, whatsappMsg, 'utf8');
   
-  // Also save as latest for easy access
-  fs.writeFileSync(
-    path.join(OUTPUT_DIR, 'latest-whatsapp.txt'),
-    generateWhatsAppSummary(analysis),
-    'utf8'
-  );
+  // Save as latest
+  fs.writeFileSync(path.join(OUTPUT_DIR, 'latest-whatsapp.txt'), whatsappMsg, 'utf8');
   
-  return { jsonPath, mdPath, whatsappPath };
+  return { jsonPath, whatsappPath, whatsappMsg };
 }
 
+/**
+ * Main function
+ */
 async function main() {
   console.log('🔥 X Trending Monitor\n');
-  console.log('⏰', new Date().toLocaleString('zh-CN'));
-  console.log('');
+  console.log('⚠️  重要提示: 当前版本需要手动配合浏览器使用');
+  console.log('   X.com 的反爬虫机制阻止了全自动抓取\n');
   
-  // For now, use mock data
-  // In production, this would use browser automation to fetch from X.com
-  console.log('📱 Generating search URLs:');
-  const urls = generateSearchUrls();
-  urls.forEach(({ category, url }) => {
-    console.log(`  ${category}: ${url.substring(0, 80)}...`);
+  console.log('📋 使用说明:\n');
+  console.log('1. 在 Chrome 中登录 X.com');
+  console.log('2. 运行以下搜索查询:\n');
+  
+  SEARCH_QUERIES.forEach((q, i) => {
+    const encoded = encodeURIComponent(`${q.query} min_faves:${q.minLikes} lang:en`);
+    console.log(`   ${i + 1}. ${q.category}:`);
+    console.log(`      https://x.com/search?q=${encoded}&f=live\n`);
   });
   
-  console.log('\n⚠️  Note: Browser automation required to fetch from X.com');
-  console.log('   Manual access needed due to X.com authentication\n');
+  console.log('3. 复制感兴趣的推文内容到本地文件');
+  console.log('4. 或者使用 browser 工具 snapshot 页面后手动解析\n');
   
-  // Generate mock data for demonstration
-  console.log('📝 Using sample data for demonstration...\n');
-  const tweets = generateMockTweets();
+  console.log('⚠️  由于 X.com 的限制，此技能目前无法自动运行');
+  console.log('   建议改用: ai-trend-monitor (聚合 arXiv, Reddit, HN 等)\n');
   
-  console.log(`📊 Analyzing ${tweets.length} tweets...`);
-  const analysis = analyzeTweets(tweets);
+  // Create empty output to indicate status
+  const emptyResult = [];
+  const paths = saveOutputs(emptyResult);
   
-  console.log('\n📈 Analysis complete:');
-  console.log(`   Total tweets: ${analysis.scored.length}`);
-  console.log(`   Categories: ${Object.keys(analysis.byCategory).join(', ')}`);
-  console.log(`   Hot topics: ${Object.keys(analysis.topicCounts).length}`);
-  
-  // Save outputs
-  console.log('\n💾 Saving outputs...');
-  const paths = saveOutputs(analysis);
-  console.log(`   JSON: ${path.basename(paths.jsonPath)}`);
-  console.log(`   Report: ${path.basename(paths.mdPath)}`);
-  console.log(`   WhatsApp: ${path.basename(paths.whatsappPath)}`);
-  
-  // Output WhatsApp message
-  const whatsappMsg = generateWhatsAppSummary(analysis);
-  console.log('\n📱 WhatsApp Message:');
+  console.log('📱 输出消息:');
   console.log('---WHATSAPP_MESSAGE_START---');
-  console.log(whatsappMsg);
+  console.log(paths.whatsappMsg);
   console.log('---WHATSAPP_MESSAGE_END---');
-  
-  return whatsappMsg;
 }
 
-// Run if called directly
+// Run
 if (require.main === module) {
   main().catch(console.error);
 }
 
-module.exports = { main, generateSearchUrls, analyzeTweets, generateWhatsAppSummary };
+module.exports = { main, SEARCH_QUERIES, generateWhatsAppSummary };
