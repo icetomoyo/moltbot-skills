@@ -260,7 +260,12 @@ async function fetchReddit() {
       
       for (const post of posts) {
         const data = post.data;
-        if (data.score > 5) {
+        
+        // Filter by score and age (max 7 days old)
+        const postDate = new Date(data.created_utc * 1000);
+        const daysOld = (Date.now() - postDate.getTime()) / (1000 * 60 * 60 * 24);
+        
+        if (data.score > 5 && daysOld <= 7) {
           results.push({
             title: data.title,
             url: `https://reddit.com${data.permalink}`,
