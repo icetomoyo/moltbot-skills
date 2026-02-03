@@ -170,7 +170,7 @@ function generateAnalysisPrompt(data, format = 'full') {
 }
 
 // Call AI model for analysis using sessions_spawn
-async function analyzeWithAI(prompt) {
+async function analyzeWithAI(prompt, data) {
   console.log('🤖 Calling AI for deep analysis...');
   
   try {
@@ -186,8 +186,8 @@ async function analyzeWithAI(prompt) {
     console.log('   ⚠️  Note: AI analysis requires manual processing or configured API');
     console.log('   Analysis prompt saved to:', tempFile);
     
-    // Return a placeholder with instructions
-    return generateBasicAnalysis(prompt);
+    // Return a basic analysis with full data
+    return generateBasicAnalysis(data);
   } catch (e) {
     console.error('❌ AI analysis failed:', e.message);
     return null;
@@ -195,45 +195,80 @@ async function analyzeWithAI(prompt) {
 }
 
 // Generate basic analysis without external AI
-function generateBasicAnalysis(prompt) {
-  // Extract data from prompt
-  const items = [];
-  const lines = prompt.split('\n');
-  let currentItem = null;
-  
-  for (const line of lines) {
-    if (line.startsWith('### ')) {
-      if (currentItem) items.push(currentItem);
-      currentItem = { title: line.replace('### ', '').trim() };
-    } else if (currentItem && line.startsWith('- 来源:')) {
-      currentItem.platform = line.replace('- 来源:', '').trim();
-    } else if (currentItem && line.startsWith('- 热度:')) {
-      currentItem.score = line.replace('- 热度:', '').trim();
-    }
-  }
-  if (currentItem) items.push(currentItem);
+function generateBasicAnalysis(data) {
+  const { rankedItems, byPlatform } = data;
+  const topItems = rankedItems.slice(0, 15);
   
   // Generate basic report
   let report = `# AI 趋势分析报告\n\n`;
-  report += `> **注意**: 此为自动生成的初步分析报告。深度分析需要 AI 模型处理。\n`;
-  report += `> **数据时间**: ${new Date().toLocaleString('zh-CN')}\n\n`;
+  report += `> **报告类型**: 初步数据分析\n`;
+  report += `> **生成时间**: ${new Date().toLocaleString('zh-CN')}\n\n`;
   
   report += `## 📋 数据概览\n\n`;
-  report += `- 分析热点数: ${items.length}\n`;
-  report += `- 数据已准备好，等待深度分析\n\n`;
+  report += `- **总监控条目**: ${rankedItems.length}\n`;
+  report += `- **分析热点数**: ${topItems.length}\n`;
+  report += `- **数据源分布**: ${Object.entries(byPlatform).map(([p, items]) => `${p}: ${items.length}条`).join(', ')}\n\n`;
   
-  report += `## 🔥 热点列表\n\n`;
-  items.slice(0, 10).forEach((item, i) => {
-    report += `${i + 1}. **${item.title}**\n`;
-    report += `   - 来源: ${item.platform || 'N/A'}\n`;
-    report += `   - 热度: ${item.score || 'N/A'}\n\n`;
+  report += `## 🔥 TOP 15 热点详情\n\n`;
+  topItems.forEach((item, i) => {
+    report += `### ${i + 1}. ${item.title}\n\n`;
+    report += `- **来源**: ${item.platform}\n`;
+    report += `- **热度**: ${item.score.toFixed(1)}\n`;
+    report += `- **链接**: ${item.url}\n`;
+    if (item.hotTopics?.length) {
+      report += `- **标签**: ${item.hotTopics.map(h => h.topic).join(', ')}\n`;
+    }
+    
+    // Platform-specific details
+    if (item.platform === 'GitHub') {
+      report += `- **Stars**: ${item.stars || 'N/A'}\n`;
+      report += `- **Forks**: ${item.forks || 'N/A'}\n`;
+      if (item.language) report += `- **语言**: ${item.language}\n`;
+    } else if (item.platform === 'Reddit') {
+      report += `- **Upvotes**: ${item.upvotes || 'N/A'}\n`;
+      report += `- **Comments**: ${item.comments || 'N/A'}\n`;
+      if (item.subreddit) report += `- **Subreddit**: r/${item.subreddit}\n`;
+    } else if (item.platform === 'HackerNews') {
+      report += `- **Points**: ${item.points || 'N/A'}\n`;
+      report += `- **Comments**: ${item.comments || 'N/A'}\n`;
+    } else if (item.platform === 'HuggingFace') {
+      report += `- **Likes**: ${item.likes || 'N/A'}\n`;
+    } else if (item.platform === 'arXiv') {
+      report += `- **作者**: ${item.author || 'N/A'}\n`;
+      report += `- **发布时间**: ${item.published ? new Date(item.published).toLocaleDateString('zh-CN') : 'N/A'}\n`;
+      if (item.arxivCategory) report += `- **分类**: ${item.arxivCategory}\n`;
+    }
+    
+    if (item.abstract) {
+      report += `- **摘要**: ${item.abstract.substring(0, 300)}${item.abstract.length > 300 ? '...' : ''}\n`;
+    }
+    
+    report += `\n---\n\n`;
   });
   
-  report += `## 📝 深度分析说明\n\n`;
-  report += `要生成完整的深度分析报告，请:\n\n`;
-  report += `1. 查看分析提示文件: \`output/analysis-prompt.txt\`\n`;
-  report += `2. 将提示内容发送给 AI 模型进行分析\n`;
-  report += `3. 或将提示内容复制到 Claude/GPT 等工具中\n\n`;
+  report += `## 📊 热门标签统计\n\n`;
+  const tagCounts = {};
+  topItems.forEach(item => {
+    if (item.hotTopics) {
+      item.hotTopics.forEach(h => {
+        tagCounts[h.topic] = (tagCounts[h.topic] || 0) + 1;
+      });
+    }
+  });
+  
+  const sortedTags = Object.entries(tagCounts)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 10);
+  
+  sortedTags.forEach(([tag, count], i) => {
+    report += `${i + 1}. **${tag}**: ${count} 次提及\n`;
+  });
+  
+  report += `\n## 📝 说明\n\n`;
+  report += `本报告为数据原始分析。如需深度解读和趋势预测，建议：\n`;
+  report += `1. 使用 AI 模型分析上述数据\n`;
+  report += `2. 查看完整数据文件: \`output/analysis-prompt.txt\`\n`;
+  report += `3. 运行深度分析: \`node scripts/analyze.js\`\n\n`;
   
   return report;
 }
@@ -321,7 +356,7 @@ async function main() {
   
   // Call AI for analysis
   console.log('\n🔍 Starting deep analysis...');
-  const analysis = await analyzeWithAI(prompt);
+  const analysis = await analyzeWithAI(prompt, data);
   
   if (!analysis) {
     console.error('❌ Analysis failed');
