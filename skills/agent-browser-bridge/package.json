@@ -1,0 +1,20 @@
+{
+  "name": "agent-browser-bridge-client",
+  "version": "1.0.0",
+  "description": "OpenClaw client for browser-use bridge",
+  "main": "client.ts",
+  "types": "client.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "ts-node test.ts"
+  },
+  "dependencies": {
+    "ws": "^8.18.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "@types/ws": "^8.5.13",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.7.0"
+  }
+}
