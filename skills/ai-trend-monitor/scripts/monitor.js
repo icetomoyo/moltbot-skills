@@ -203,7 +203,7 @@ function calculateArxivScore(entry) {
       }
     }
   }
-  return Math.min(score, 10);
+  return score; // No cap, allow scores above 10
 }
 
 // Fetch from HuggingFace API
@@ -222,7 +222,7 @@ async function fetchHuggingFace() {
         title: paper.title || p.title || 'Unknown',
         url: paper.url || `https://arxiv.org/abs/${paper.id}`,
         author: paper.authors?.[0]?.name || 'Unknown',
-        score: Math.min((p.numLikes || 0) / 50 + 3, 10),
+        score: (p.numLikes || 0) / 50 + 3, // No cap, allow scores above 10
         hotTopics: detectHotTopics(paper.title + ' ' + (p.summary || paper.abstract)),
         timestamp: p.publishedAt || new Date().toISOString(),
         platform: 'HuggingFace',
@@ -270,7 +270,7 @@ async function fetchReddit() {
             title: data.title,
             url: `https://reddit.com${data.permalink}`,
             author: `u/${data.author}`,
-            score: Math.min(data.score / 50 + 3, 10),
+            score: data.score / 50 + 3, // No cap, allow scores above 10
             hotTopics: detectHotTopics(data.title + ' ' + (data.selftext || '')),
             timestamp: new Date(data.created_utc * 1000).toISOString(),
             platform: 'Reddit',
@@ -349,7 +349,7 @@ async function fetchHackerNews() {
               title: hit.title,
               url: hitUrl,
               author: hit.author,
-              score: Math.min(hit.points / 40 + 2, 10),
+              score: hit.points / 40 + 2, // No cap, allow scores above 10
               hotTopics: detectHotTopics(hit.title + ' ' + (hit.story_text || '')),
               timestamp: hit.created_at,
               platform: 'HackerNews',
@@ -477,7 +477,7 @@ function generateWhatsAppSummary(data) {
       const platform = PLATFORMS[item.platform.toLowerCase()]?.emoji || '•';
       
       msg += `\n${i + 1}️⃣ ${fire} [${item.platform}]\n`;
-      msg += `🔥 热度: ${item.score.toFixed(1)}/10\n`;
+      msg += `🔥 热度: ${item.score.toFixed(1)}\n`;
       
       // Title
       const displayTitle = item.title.length > 100 
