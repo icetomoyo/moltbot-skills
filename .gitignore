@@ -41,6 +41,10 @@ output/*.json
 output/*.txt
 output/*.md
 
+# Skills output folders (runtime generated content)
+skills/**/output/
+!skills/**/output/.gitkeep
+
 # Personal setup files
 GITHUB_SETUP.md
 
