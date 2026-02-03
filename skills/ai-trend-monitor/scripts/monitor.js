@@ -466,8 +466,8 @@ function generateWhatsAppSummary(data) {
     .join(' | ');
   msg += `📊 数据源: ${platformSummary}\n\n`;
   
-  // TOP 8 individual items with full details
-  const topItems = rankedItems.slice(0, 8);
+  // TOP 10 individual items with full details
+  const topItems = rankedItems.slice(0, 10);
   if (topItems.length > 0) {
     msg += `🏆 TOP ${topItems.length} 热点内容\n`;
     msg += `━━━━━━━━━━━━━━━━━━━━━━\n`;
