@@ -477,6 +477,7 @@ function generateWhatsAppSummary(data) {
       const platform = PLATFORMS[item.platform.toLowerCase()]?.emoji || '•';
       
       msg += `\n${i + 1}️⃣ ${fire} [${item.platform}]\n`;
+      msg += `🔥 热度: ${item.score.toFixed(1)}/10\n`;
       
       // Title
       const displayTitle = item.title.length > 100 
