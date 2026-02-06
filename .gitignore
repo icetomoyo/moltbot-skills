@@ -56,3 +56,8 @@ skills/asuna_companion/
 
 # OS
 Thumbs.db
+
+# Local data (user-specific)
+memory/
+scripts/
+
