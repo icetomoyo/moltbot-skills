@@ -4,6 +4,20 @@ A curated collection of custom skills for OpenClaw - AI automation, monitoring, 
 
 ## 🚀 Featured Skills
 
+### Company Analyzer 📊
+Professional investment analysis tool for US stocks, A-shares, and HK stocks with multi-dimensional deep analysis.
+
+- **Path**: `skills/company-analyzer/`
+- **Features**:
+  - Multi-market support (US, A-shares, HK)
+  - Multiple data sources (Alpha Vantage, SEC EDGAR, Tencent Finance, Eastmoney)
+  - Smart rating system (0-100 score, A-F grades)
+  - DuPont analysis (ROE decomposition)
+  - Industry comparison & ranking
+  - Smart queue system with rate limiting
+  - Dual output: Markdown + WhatsApp
+- **Status**: ✅ Ready
+
 ### AI Trend Monitor
 Unified AI trend monitoring across multiple sources - arXiv, Hugging Face, Reddit, Hacker News, GitHub, and Nitter.
 
