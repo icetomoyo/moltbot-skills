@@ -59,5 +59,8 @@ Thumbs.db
 
 # Local data (user-specific)
 memory/
-scripts/
+
+# Specific files to ignore
+scripts/publish-skill.sh
+
 
