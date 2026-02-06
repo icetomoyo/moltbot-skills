@@ -137,7 +137,6 @@ openclaw-skills/
 - **Chrome profiles**: `.chrome-profile*` directories are excluded from git
 - **Credentials**: All tokens, keys, and secrets are gitignored
 - **Local data**: Output files and cache are not synced
-- **Sync folder**: Reports auto-sync to `/Users/icetomoyo/Downloads/同步空间/Dir4Openclaw/`
 
 See `.gitignore` for full list of excluded files.
 
