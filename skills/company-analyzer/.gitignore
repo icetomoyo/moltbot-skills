@@ -1,0 +1,27 @@
+# 依赖
+node_modules/
+package-lock.json
+
+# 输出文件
+output/*.md
+output/*.json
+output/*.txt
+!output/.gitkeep
+
+# 配置（包含 API Key）
+config.local.js
+.env
+
+# 日志
+*.log
+logs/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db

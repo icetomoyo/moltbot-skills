@@ -1,0 +1,25 @@
+{
+  "name": "company-analyzer",
+  "version": "1.0.0",
+  "description": "专业公司投资分析工具 - 深度财务分析、行业研究、投资价值评估",
+  "main": "scripts/analyze.js",
+  "scripts": {
+    "analyze": "node scripts/analyze.js",
+    "report": "node scripts/report.js"
+  },
+  "keywords": [
+    "investment",
+    "analysis",
+    "finance",
+    "company",
+    "stock"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^1.13.4",
+    "cheerio": "^1.0.0-rc.12",
+    "iconv-lite": "^0.7.2",
+    "playwright": "^1.40.0"
+  }
+}
