@@ -78,8 +78,9 @@ const BROAD_CATEGORIES = {
 
 const CONFIG = {
   totalMaxResults: 50,
-  hoursBack: 168,
-  minPapersThreshold: 5,
+  hoursBack: 96,        // 默认96小时
+  extendedHoursBack: 168, // 扩展到168小时
+  minPapersThreshold: 5, // 最少需要5篇论文才满意
   trendingWeight: 2.5,
   recencyWeight: 2.0,
   maxPapersPerCategory: 20
@@ -361,7 +362,7 @@ function generateFullReport(top20, featured, date, hoursBack) {
   return md;
 }
 
-function generateWhatsAppSummary(featured) {
+function generateWhatsAppSummary(featured, hoursBack = 24) {
   if (!featured || !featured.topPick) return `📚 Daily AI Papers - ${getDateString()}\n\n⚠️ No featured papers today.`;
   
   const tp = featured.topPick;
@@ -372,6 +373,7 @@ function generateWhatsAppSummary(featured) {
   msg += `📌 ${tp.title}\n\n`;
   msg += `🔥 热度: ${tp.trendingScore}\n`;
   msg += `📁 ${tp.researchCategory}\n`;
+  msg += `⏰ 搜索范围: 最近${hoursBack}小时\n`;
   if (tp.trendingSignals?.length) msg += `📈 ${tp.trendingSignals.slice(0, 3).join(', ')}\n`;
   msg += `🔗 ${tp.url}\n`;
   msg += `════════════════════════════════════\n\n`;
@@ -388,24 +390,38 @@ async function main() {
     ensureDependencies();
     console.log('🚀 Daily Papers X - Enhanced Edition\n');
     console.log(`📚 Dynamic hot topics: ${DYNAMIC_HOT_TOPICS.length} loaded`);
-    console.log(`⏰ Search range: ${CONFIG.hoursBack} hours (${Math.round(CONFIG.hoursBack/24)} days)`);
-    console.log(`📊 ArXiv categories: Main ${Object.keys(CATEGORIES).length} + Broad ${Object.keys(BROAD_CATEGORIES).length}`);
+    
+    // 第一步：搜索24小时内的论文
+    console.log(`⏰ Step 1: Searching last ${CONFIG.hoursBack} hours...`);
     let allPapers = await searchPapers(CONFIG.hoursBack);
+    let usedHoursBack = CONFIG.hoursBack;
+    
+    // 如果论文数量不足，扩展到48小时
+    if (allPapers.length < CONFIG.minPapersThreshold) {
+      console.log(`\n⚠️  Only ${allPapers.length} papers found in last ${CONFIG.hoursBack}h (threshold: ${CONFIG.minPapersThreshold})`);
+      console.log(`⏰ Step 2: Extending search to last ${CONFIG.extendedHoursBack} hours...\n`);
+      allPapers = await searchPapers(CONFIG.extendedHoursBack);
+      usedHoursBack = CONFIG.extendedHoursBack;
+    }
+    
+    console.log(`\n✅ Final search range: last ${usedHoursBack} hours`);
+    
     if (allPapers.length === 0) {
       console.log('\n⚠️ No papers found');
       const memoryDir = path.join(WORKSPACE, 'memory');
       if (!fs.existsSync(memoryDir)) fs.mkdirSync(memoryDir, { recursive: true });
-      const emptyMsg = `📚 Daily AI Papers - ${getDateString()}\n\n⚠️ No papers found in last ${CONFIG.hoursBack} hours\n\nTry again later! 📖`;
+      const emptyMsg = `📚 Daily AI Papers - ${getDateString()}\n\n⚠️ No papers found in last ${usedHoursBack} hours\n\nTry again later! 📖`;
       console.log('\n📱 WhatsApp Message:');
       console.log('---WHATSAPP_MESSAGE_START---');
       console.log(emptyMsg);
       console.log('---WHATSAPP_MESSAGE_END---');
       process.exit(0);
     }
+    
     const top20 = selectTop20Papers(allPapers);
     const featured = selectFeaturedPapers(top20);
     const date = new Date();
-    const fullReport = generateFullReport(top20, featured, date, CONFIG.hoursBack);
+    const fullReport = generateFullReport(top20, featured, date, usedHoursBack);
     const memoryDir = path.join(WORKSPACE, 'memory');
     if (!fs.existsSync(memoryDir)) fs.mkdirSync(memoryDir, { recursive: true });
     const mdPath = path.join(memoryDir, `papers-${getDateString(date)}.md`);
@@ -424,7 +440,7 @@ async function main() {
       }
     }
     
-    const whatsappSummary = generateWhatsAppSummary(featured);
+    const whatsappSummary = generateWhatsAppSummary(featured, usedHoursBack);
     const msgPath = path.join(memoryDir, `papers-${getDateString(date)}-summary.txt`);
     fs.writeFileSync(msgPath, whatsappSummary, 'utf8');
     console.log(`✅ WhatsApp summary: ${msgPath}`);

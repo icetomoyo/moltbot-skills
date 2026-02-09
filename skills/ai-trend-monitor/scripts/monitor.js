@@ -43,9 +43,8 @@ const HOT_TOPICS = {
     "bipedal"
   ],
   "agents": [
-    "agents",
     "multi-agent",
-    "agentic",
+    "agents",
     "Agent",
     "AutoGPT",
     "Devin",
@@ -54,8 +53,9 @@ const HOT_TOPICS = {
     "Computer Use"
   ],
   "vla": [
+    "practical",
     "contact",
-    "action",
+    "interaction",
     "VLA",
     "OpenVLA",
     "RT-2",
@@ -76,7 +76,7 @@ const HOT_TOPICS = {
     "Video Generation"
   ],
   "infra": [
-    "exploration",
+    "post-training",
     "Training",
     "Inference",
     "LoRA",
@@ -91,7 +91,6 @@ const HOT_TOPICS = {
     "Interpretability"
   ],
   "opensource": [
-    "github.com",
     "Open Source",
     "HuggingFace",
     "GitHub",
@@ -165,7 +164,14 @@ async function fetchArxiv() {
     const response = await axios.get(url, { timeout: 10000 });
     const entries = parseArxivXml(response.data);
     
-    return entries.map(e => ({
+    // Filter entries by age (max 2 days old for freshness)
+    const filteredEntries = entries.filter(e => {
+      const pubDate = new Date(e.published);
+      const daysOld = (Date.now() - pubDate.getTime()) / (1000 * 60 * 60 * 24);
+      return daysOld <= 2;
+    });
+    
+    return filteredEntries.map(e => ({
       title: e.title,
       url: e.id.replace('/abs/', '/pdf/'),
       author: e.authors?.[0] || 'Unknown',
@@ -224,19 +230,27 @@ async function fetchHuggingFace() {
     const response = await axios.get(url, { timeout: 10000 });
     if (!Array.isArray(response.data)) return [];
     
-    return response.data.slice(0, 10).map(p => {
-      const paper = p.paper || {};
-      return {
-        title: paper.title || p.title || 'Unknown',
-        url: paper.url || `https://arxiv.org/abs/${paper.id}`,
-        author: paper.authors?.[0]?.name || 'Unknown',
-        score: (p.numLikes || 0) / 50 + 3, // No cap, allow scores above 10
-        hotTopics: detectHotTopics(paper.title + ' ' + (p.summary || paper.abstract)),
-        timestamp: p.publishedAt || new Date().toISOString(),
-        platform: 'HuggingFace',
-        likes: p.numLikes || 0
-      };
-    });
+    return response.data
+      .filter(p => {
+        // Filter by age (max 2 days old for freshness)
+        const pubDate = new Date(p.publishedAt || new Date());
+        const daysOld = (Date.now() - pubDate.getTime()) / (1000 * 60 * 60 * 24);
+        return daysOld <= 2;
+      })
+      .slice(0, 10)
+      .map(p => {
+        const paper = p.paper || {};
+        return {
+          title: paper.title || p.title || 'Unknown',
+          url: paper.url || `https://arxiv.org/abs/${paper.id}`,
+          author: paper.authors?.[0]?.name || 'Unknown',
+          score: (p.numLikes || 0) / 50 + 3, // No cap, allow scores above 10
+          hotTopics: detectHotTopics(paper.title + ' ' + (p.summary || paper.abstract)),
+          timestamp: p.publishedAt || new Date().toISOString(),
+          platform: 'HuggingFace',
+          likes: p.numLikes || 0
+        };
+      });
   } catch (e) {
     console.error('    ❌ HuggingFace failed:', e.message);
     return [];
@@ -269,11 +283,11 @@ async function fetchReddit() {
       for (const post of posts) {
         const data = post.data;
         
-        // Filter by score and age (max 7 days old)
+        // Filter by score and age (max 2 days old for freshness)
         const postDate = new Date(data.created_utc * 1000);
         const daysOld = (Date.now() - postDate.getTime()) / (1000 * 60 * 60 * 24);
         
-        if (data.score > 5 && daysOld <= 7) {
+        if (data.score > 5 && daysOld <= 2) {
           results.push({
             title: data.title,
             url: `https://reddit.com${data.permalink}`,
@@ -351,7 +365,7 @@ async function fetchHackerNews() {
             
             const hitDate = new Date(hit.created_at);
             const daysOld = (Date.now() - hitDate.getTime()) / (1000 * 60 * 60 * 24);
-            if (daysOld > 7) continue;
+            if (daysOld > 2) continue;
             
             results.push({
               title: hit.title,
@@ -460,6 +474,11 @@ async function fetchGitHub() {
         for (const repo of repos) {
           if (seenRepos.has(repo.id)) continue;
           seenRepos.add(repo.id);
+          
+          // Filter by age (max 2 days old for freshness)
+          const repoDate = new Date(repo.created_at);
+          const daysOld = (Date.now() - repoDate.getTime()) / (1000 * 60 * 60 * 24);
+          if (daysOld > 2) continue;
           
           // Calculate score based on stars and recent activity
           const stars = repo.stargazers_count || 0;
@@ -629,15 +648,27 @@ function generateWhatsAppSummary(data) {
 // Save outputs
 function saveOutputs(data, whatsappMsg) {
   const timestamp = getTimestamp();
-  
+
   const jsonPath = path.join(OUTPUT_DIR, `trends-${timestamp}.json`);
   fs.writeFileSync(jsonPath, JSON.stringify(data, null, 2), 'utf8');
-  
+
   const msgPath = path.join(OUTPUT_DIR, `whatsapp-${timestamp}.txt`);
   fs.writeFileSync(msgPath, whatsappMsg, 'utf8');
-  
+
   fs.writeFileSync(path.join(OUTPUT_DIR, 'latest-whatsapp.txt'), whatsappMsg, 'utf8');
-  
+
+  // Copy to sync folder
+  const syncFolder = '/Users/icetomoyo/Downloads/同步空间/Dir4Openclaw';
+  if (fs.existsSync(syncFolder)) {
+    const syncPath = path.join(syncFolder, `ai-trends-${timestamp}.json`);
+    try {
+      fs.copyFileSync(jsonPath, syncPath);
+      console.log(`   📁 已同步: ${syncPath}`);
+    } catch (e) {
+      console.error(`   ⚠️ 同步失败:`, e.message);
+    }
+  }
+
   return { jsonPath, msgPath };
 }
 
