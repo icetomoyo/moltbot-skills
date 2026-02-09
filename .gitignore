@@ -63,4 +63,7 @@ memory/
 # Specific files to ignore
 scripts/publish-skill.sh
 
+# Pi Agent - kept outside version control
+pi-agent/
+
 
