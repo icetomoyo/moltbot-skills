@@ -2,11 +2,24 @@
 /**
  * AI Trend Monitor - Unified monitoring across multiple sources
  * Sources: arXiv, HuggingFace, Reddit, HackerNews, Nitter
+ * 
+ * 💡 增强版可用: monitor-enhanced.js (融合 ai-daily-digest 能力)
+ *    - 90+ 技术博客 RSS
+ *    - Gemini AI 智能评分
+ *    - 中文翻译 + 结构化摘要
+ *    - 趋势总结 + 可视化图表
  */
 
 const fs = require('fs');
 const path = require('path');
 const { execSync } = require('child_process');
+
+// 检查是否需要运行增强版
+if (process.env.GEMINI_API_KEY && process.env.USE_ENHANCED === 'true') {
+  console.log('🚀 检测到 GEMINI_API_KEY，切换到增强版...\n');
+  require('./monitor-enhanced.js');
+  return;
+}
 
 const SKILL_DIR = __dirname;
 const WORKSPACE = process.env.WORKSPACE || '/Users/icetomoyo/clawd';
@@ -16,6 +29,12 @@ const OUTPUT_DIR = path.join(SKILL_DIR, '..', 'output');
 if (!fs.existsSync(OUTPUT_DIR)) {
   fs.mkdirSync(OUTPUT_DIR, { recursive: true });
 }
+
+// 提示增强版可用
+console.log('💡 提示: 配置 GEMINI_API_KEY 可使用增强版（融合 ai-daily-digest 能力）');
+console.log('   export GEMINI_API_KEY="your-key"');
+console.log('   export USE_ENHANCED=true');
+console.log('   或直接运行: node monitor-enhanced.js\n');
 
 // Hot topics tracking - EXPANDED with more categories
 const HOT_TOPICS = {
@@ -33,6 +52,9 @@ const HOT_TOPICS = {
   ],
   "robotics": [
     "robotics",
+    "robots",
+    "robotic",
+    "robot",
     "Figure",
     "Optimus",
     "Atlas",
@@ -53,9 +75,9 @@ const HOT_TOPICS = {
     "Computer Use"
   ],
   "vla": [
-    "practical",
-    "contact",
-    "interaction",
+    "action",
+    "activation",
+    "vision-language-action",
     "VLA",
     "OpenVLA",
     "RT-2",
@@ -76,7 +98,7 @@ const HOT_TOPICS = {
     "Video Generation"
   ],
   "infra": [
-    "post-training",
+    "exploration",
     "Training",
     "Inference",
     "LoRA",
@@ -91,6 +113,7 @@ const HOT_TOPICS = {
     "Interpretability"
   ],
   "opensource": [
+    "github.com",
     "Open Source",
     "HuggingFace",
     "GitHub",
@@ -660,16 +683,136 @@ function saveOutputs(data, whatsappMsg) {
   // Copy to sync folder
   const syncFolder = '/Users/icetomoyo/Downloads/同步空间/Dir4Openclaw';
   if (fs.existsSync(syncFolder)) {
-    const syncPath = path.join(syncFolder, `ai-trends-${timestamp}.json`);
+    // Sync JSON (raw data)
+    const syncJsonPath = path.join(syncFolder, `ai-trends-${timestamp}.json`);
     try {
-      fs.copyFileSync(jsonPath, syncPath);
-      console.log(`   📁 已同步: ${syncPath}`);
+      fs.copyFileSync(jsonPath, syncJsonPath);
+      console.log(`   📁 已同步 JSON: ${path.basename(syncJsonPath)}`);
     } catch (e) {
-      console.error(`   ⚠️ 同步失败:`, e.message);
+      console.error(`   ⚠️ JSON同步失败:`, e.message);
+    }
+    
+    // Sync Markdown report (human-readable)
+    const dateStr = timestamp.split('T')[0];
+    const mdPath = path.join(OUTPUT_DIR, `report-${timestamp}.md`);
+    const mdContent = generateMarkdownReport(data, whatsappMsg);
+    fs.writeFileSync(mdPath, mdContent, 'utf8');
+    
+    const syncMdPath = path.join(syncFolder, `ai-trends-report-${dateStr}.md`);
+    try {
+      fs.writeFileSync(syncMdPath, mdContent, 'utf8');
+      console.log(`   📄 已同步报告: ${path.basename(syncMdPath)}`);
+    } catch (e) {
+      console.error(`   ⚠️ 报告同步失败:`, e.message);
     }
   }
 
   return { jsonPath, msgPath };
+}
+
+// Generate Markdown report for sync folder
+function generateMarkdownReport(data, whatsappMsg) {
+  const { byPlatform, rankedItems } = data;
+  const now = new Date().toLocaleString('zh-CN');
+  
+  let md = `# 🔥 AI 热点监控报告\n\n`;
+  md += `**生成时间**: ${now}\n\n`;
+  
+  // Data source summary
+  md += `## 📊 数据源统计\n\n`;
+  md += `| 来源 | 数量 | 状态 |\n`;
+  md += `|------|------|------|\n`;
+  Object.entries(byPlatform).forEach(([p, items]) => {
+    const platform = PLATFORMS[p.toLowerCase()];
+    md += `| ${platform?.emoji || '•'} ${platform?.name || p} | ${items.length} | ✅ |\n`;
+  });
+  md += `\n**总计**: ${rankedItems.length} 条热点内容\n\n`;
+  
+  // TOP 10 Hot Items
+  const topItems = rankedItems.slice(0, 10);
+  if (topItems.length > 0) {
+    md += `## 🏆 TOP 10 热点内容\n\n`;
+    
+    topItems.forEach((item, i) => {
+      const fire = '🔥'.repeat(Math.min(Math.ceil(item.score / 3), 3)) || '⭐';
+      md += `### ${i + 1}. ${fire} ${item.title}\n\n`;
+      
+      md += `- **热度**: ${item.score.toFixed(1)}/10\n`;
+      md += `- **来源**: ${item.platform}\n`;
+      
+      if (item.author) {
+        md += `- **作者**: ${item.author}\n`;
+      }
+      
+      // Platform-specific metrics
+      if (item.platform === 'Reddit') {
+        md += `- **指标**: 👍 ${item.upvotes} upvotes | 💬 ${item.comments} comments\n`;
+      } else if (item.platform === 'HackerNews') {
+        md += `- **指标**: 👍 ${item.points} points | 💬 ${item.comments} comments\n`;
+      } else if (item.platform === 'HuggingFace') {
+        md += `- **指标**: ❤️ ${item.likes} likes\n`;
+      } else if (item.platform === 'GitHub') {
+        md += `- **指标**: ⭐ ${item.stars} stars | 🍴 ${item.forks} forks\n`;
+      }
+      
+      // Hot topics
+      if (item.hotTopics && item.hotTopics.length > 0) {
+        const topics = item.hotTopics.map(h => h.topic).join(', ');
+        md += `- **标签**: ${topics}\n`;
+      }
+      
+      if (item.url) {
+        md += `- **链接**: [查看原文](${item.url})\n`;
+      }
+      
+      md += `\n`;
+    });
+  }
+  
+  // Hot topics summary
+  const allTopics = {};
+  rankedItems.forEach(item => {
+    if (item.hotTopics) {
+      item.hotTopics.forEach(h => {
+        allTopics[h.topic] = (allTopics[h.topic] || 0) + 1;
+      });
+    }
+  });
+  
+  const sortedTopics = Object.entries(allTopics)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 10);
+  
+  if (sortedTopics.length > 0) {
+    md += `## 📈 热门关键词 TOP 10\n\n`;
+    sortedTopics.forEach(([topic, count], i) => {
+      md += `${i + 1}. **${topic}**: ${count} 次提及\n`;
+    });
+    md += `\n`;
+  }
+  
+  // Platform details
+  md += `## 📋 各平台详情\n\n`;
+  Object.entries(byPlatform).forEach(([p, items]) => {
+    const platform = PLATFORMS[p.toLowerCase()];
+    md += `### ${platform?.emoji || '•'} ${platform?.name || p} (${items.length} 条)\n\n`;
+
+    // 显示所有内容，不再截断
+    items.forEach((item, i) => {
+      md += `${i + 1}. ${item.title}`;
+      if (item.url) {
+        md += ` [链接](${item.url})`;
+      }
+      md += `\n`;
+    });
+
+    md += `\n`;
+  });
+  
+  md += `---\n\n`;
+  md += `*报告由 AI Trend Monitor 自动生成*\n`;
+  
+  return md;
 }
 
 // Main function
