@@ -1,188 +1,209 @@
 ---
 name: ai-trend-monitor
-description: Unified AI trend monitoring across multiple sources - arXiv, Hugging Face, Reddit, Hacker News, and Nitter. Tracks trending AI/LLM/Robotics/VLA/World Model discussions without requiring login.
+description: Unified AI trend monitoring with ai-daily-digest integration. Tracks 90+ tech blogs via RSS, plus Reddit, HackerNews, arXiv, HuggingFace, GitHub. Features Gemini AI scoring, Chinese translation, structured summaries, and trend analysis.
 homepage: https://github.com/icetomoyo/openclaw-skills
-metadata: {"openclaw":{"emoji":"🔥","requires":{"bins":["node"]},"install":[{"id":"npm","kind":"npm","package":"axios","bins":["node"]}]}}
+metadata: {"openclaw":{"emoji":"🔥","requires":{"bins":["node"]},"install":[{"id":"npm","kind":"npm","package":"fast-xml-parser","bins":["node"]},{"id":"npm","kind":"npm","package":"axios","bins":["node"]}]}}
 ---
 
-# AI Trend Monitor 🔥
+# AI Trend Monitor 🔥 (Enhanced Edition)
 
-统一的 AI 热点监控工具，聚合多个数据源，无需登录即可追踪 AI/LLM/Robotics/VLA/World Model 的最新动态。
+统一的 AI 热点监控工具，融合 [ai-daily-digest](https://github.com/vigorX777/ai-daily-digest) 能力，聚合 **90+ 顶级技术博客 RSS**、社区讨论、学术论文、开源项目，提供 AI 智能评分和结构化日报。
+
+## ✨ 融合增强特性
+
+### 📡 技术博客 RSS 监控 (新增)
+- **90 个顶级技术博客** — 来自 Andrej Karpathy 推荐的 HN 精选
+- 包括: Simon Willison、Gwern、Lilian Weng、OpenAI、DeepMind、各大公司工程博客等
+- 自动 RSS/Atom 解析，去重过滤
+
+### 🤖 Gemini AI 智能分析 (新增)
+- **三维评分**: 相关性、质量、时效性 (1-10分)
+- **6大分类**: AI/ML、安全、工程、工具/开源、观点、其他
+- **结构化摘要**: 4-6句覆盖核心问题→论点→结论
+- **中文翻译**: 自动翻译标题和摘要
+- **推荐理由**: AI 一句话总结阅读价值
+
+### 📊 增强报告结构 (新增)
+- **今日看点**: AI 归纳当日技术圈宏观趋势
+- **今日必读 TOP 3**: 精选高分深度文章，含完整 AI 分析
+- **社区热点**: Reddit/HN/GitHub 实时讨论
+- **分类文章列表**: 按 6 大分类浏览
+- **可视化图表**: Mermaid 饼图、柱状图、标签云
 
 ## 数据源
 
-| 来源 | 类型 | 实时性 | 访问方式 |
-|------|------|--------|----------|
-| **arXiv** | 学术论文 | 实时 | API |
-| **Hugging Face** | 模型/论文 | 实时 | API |
-| **Reddit** | 社区讨论 | 分钟级 | agent-browser |
-| **Hacker News** | 技术圈 | 实时 | API |
-| **Nitter** | 推文镜像 | 分钟-小时级 | agent-browser |
+| 来源 | 类型 | 数量 | 特点 |
+|------|------|------|------|
+| **📡 Tech Blogs** | RSS | 90+ | Andrej Karpathy 推荐，深度长文 |
+| **👽 Reddit** | 社区 | 6 subreddits | 实时讨论，热点追踪 |
+| **🟠 HackerNews** | 社区 | API | 技术圈风向标 |
+| **📄 arXiv** | 论文 | API | 最新 AI 研究 |
+| **🤗 HuggingFace** | 模型 | API | 热门模型/论文 |
+| **🐙 GitHub** | 开源 | API | 新星项目 |
 
-## 监控领域
+## 安装依赖
 
-### 1. AI & LLM
-- 大语言模型（GPT-5, Claude 4, Gemini, DeepSeek, Llama 4, etc.）
-- 多模态模型
-- AI 基础设施（训练、推理、部署）
+```bash
+cd skills/ai-trend-monitor
+npm install fast-xml-parser axios
+```
 
-### 2. Robotics & Embodied AI
-- 人形机器人（Figure, Optimus, Unitree, etc.）
-- VLA 模型（OpenVLA, π0, RT-2, etc.）
-- 机器人学习
+## 配置 Gemini API
 
-### 3. World Models
-- JEPA, Sora, DreamerV3
-- 物理世界建模
-- Sim-to-real
+**必需配置**（用于 RSS 博客分析和趋势总结）:
+
+```bash
+export GEMINI_API_KEY="your-api-key"
+```
+
+获取免费 API Key: https://aistudio.google.com/apikey
 
 ## 使用方法
 
-### 手动触发
+### 增强版监控（推荐）
 
 ```bash
-# 运行完整监控
+# 完整监控（包含 RSS 博客 AI 分析）
+node skills/ai-trend-monitor/scripts/monitor-enhanced.js
+```
+
+### 原版监控（仅社区数据）
+
+```bash
+# 仅 Reddit/HN/arxiv/HF/GitHub
 node skills/ai-trend-monitor/scripts/monitor.js
-
-# 只监控特定来源
-node skills/ai-trend-monitor/scripts/monitor.js --source reddit,hackernews
-
-# 只监控特定领域
-node skills/ai-trend-monitor/scripts/monitor.js --topic vla,world-model
 ```
 
 ### 通过 OpenClaw Agent
 
 告诉 Agent：
-- "帮我看看现在 AI 领域有什么热点"
-- "监控一下最新的 AI 趋势"
-- "看看 Reddit 上在讨论什么 AI 话题"
+- "帮我看看现在 AI 领域有什么热点" → 运行完整监控
+- "监控最新的 AI 趋势" → 快速版
+- "看看今天有哪些高质量技术文章" → RSS 博客重点
 
-## 输出格式
+## 输出文件
 
-### WhatsApp 推送
+| 文件 | 说明 |
+|------|------|
+| `output/report-YYYY-MM-DD-HHMMSS.md` | 完整 Markdown 报告（含可视化图表）|
+| `output/whatsapp-YYYY-MM-DD-HHMMSS.txt` | WhatsApp 推送消息 |
+| `output/trends-YYYY-MM-DD-HHMMSS.json` | 原始数据 JSON |
+| `~/Downloads/同步空间/Dir4Openclaw/ai-trends-report-YYYY-MM-DD.md` | 同步文件夹副本 |
 
+## 报告结构示例
+
+```markdown
+# 🔥 AI 热点监控日报
+
+## 📝 今日看点
+> 今日技术圈聚焦...（AI 生成的趋势总结）
+
+## 📊 数据源统计
+| 来源类型 | 数量 | 占比 |
+
+## 🏆 今日必读 TOP 3
+### 1. 🔥🔥🔥 [中文标题]
+**AI 评分**: 综合 8.5/10 | 相关性 9/10 | 质量 8/10
+**摘要**: 4-6 句结构化中文摘要...
+**推荐理由**: ...
+
+## 🔥 TOP 10 社区热点
+...
+
+## 📚 精选文章分类
+### 🤖 AI/ML
+### 🔒 Security
+...
+
+## 📈 热门关键词 TOP 10
+### 可视化统计
+```mermaid
+xychart-beta...
 ```
-🔥 AI Trend Monitor - 2026-02-01 23:00
-
-📊 数据来源:
-   📄 arXiv: 5 篇新论文
-   🤗 HuggingFace: 3 个热门模型
-   👽 Reddit: 12 个热门讨论
-   🟠 HN: 8 个热门话题
-   🐦 Nitter: 6 条热门推文
-
-🏆 综合热度 TOP 5
-━━━━━━━━━━━━━━━━━━━━━━
-1️⃣ [OpenVLA 开源发布]
-   🔥 综合热度: 9.5/10
-   📊 来源: Reddit(2.3K↑), HN(1.1K↑), Nitter(856❤️)
-   💬 首个开源 VLA 模型，社区反响热烈...
-   🔗 https://reddit.com/r/...
-
-2️⃣ [DeepSeek-R2 即将发布]
-   🔥 综合热度: 8.8/10
-   📊 来源: arXiv, Reddit, HN
-   💬  rumored to surpass GPT-4 on reasoning tasks...
-   🔗 https://arxiv.org/...
-
-📈 热门话题:
-   • OpenVLA (15 mentions)
-   • DeepSeek-R2 (8 mentions)
-   • GPT-5 speculation (6 mentions)
-   • World Models (5 mentions)
 ```
 
-### 详细报告
+## RSS 博客源分类
 
-保存到 `output/trend-report-YYYY-MM-DD-HHMM.md`
+| 分类 | 代表博客 |
+|------|----------|
+| **🤖 AI/ML** | Simon Willison, Lilian Weng, OpenAI, DeepMind, Anthropic |
+| **🔒 Security** | Krebs on Security, Troy Hunt, Google Project Zero |
+| **⚙️ Engineering** | Martin Fowler, Netflix/Uber/Stripe Engineering, High Scalability |
+| **🛠️ Tools** | GitHub Blog, Rust/Go/Python Blog, Kubernetes |
+| **💡 Opinion** | Paul Graham, Dan Abramov, Sam Altman, patio11 |
 
-## 配置
-
-### Reddit 监控的 Subreddits
-
-- r/MachineLearning
-- r/LocalLLaMA
-- r/ArtificialIntelligence
-- r/robotics
-- r/reinforcementlearning
-
-### Hacker News 监控
-
-- 搜索关键词：AI, LLM, GPT, Claude, robotics, VLA, world model
-- 过滤：score > 50
-
-### Nitter 实例
-
-按优先级尝试：
-1. nitter.net
-2. nitter.privacydev.net
-3. nitter.cz
-4. （备用实例列表）
+完整列表见: `config/rss-feeds.js`
 
 ## 热度计算
 
-### 单平台热度
-
+### 社区内容评分
 ```
-arXiv:     热度 = 引用潜力评分 (0-10)
-HF:        热度 = log(下载量) + log(点赞数)
-Reddit:    热度 = upvotes × 1 + comments × 0.5
-HN:        热度 = score (系统自带)
-Nitter:    热度 = likes × 1 + retweets × 2
+Reddit:     热度 = upvotes × 0.01 + 5
+HackerNews: 热度 = points × 0.01 + 4
+GitHub:     热度 = stars × 0.02 + 3
 ```
 
-### 综合热度
-
+### AI 评分（RSS 博客）
 ```
-综合热度 = Σ(平台热度 × 平台权重)
+综合评分 = (相关性 + 质量 + 时效性) / 3
 
-平台权重:
-- arXiv: 1.2 (学术权威)
-- HF: 1.0 (社区热度)
-- Reddit: 0.9 (大众讨论)
-- HN: 1.1 (技术圈)
-- Nitter: 0.8 (社交媒体)
+各维度 1-10 分:
+- 相关性: 对 AI/技术从业者的价值
+- 质量:   技术深度、原创性、写作质量
+- 时效性: 当前价值和新鲜度
 ```
 
 ## 技术实现
 
-### Reddit 抓取
-
-使用 agent-browser 访问 Reddit 公开页面：
-```bash
-agent-browser open "https://www.reddit.com/r/MachineLearning/hot.json"
-agent-browser snapshot --json
+### RSS 抓取流程
+```
+90 个 RSS 源 → 并发抓取 → 时间过滤 → 去重 → 
+AI 评分/分类/摘要/翻译 → 按分排序 → 生成报告
 ```
 
-或使用 Reddit JSON API（公开）：
+### AI 分析流水线
 ```
-https://www.reddit.com/r/MachineLearning/hot.json?limit=25
-```
-
-### Hacker News API
-
-```
-https://hn.algolia.com/api/v1/search?query=AI&tags=story&numericFilters=points>50
+RSS 文章 → Gemini API → 三维评分 + 分类 + 摘要 + 翻译
 ```
 
-### Nitter 抓取
+## 配置调优
 
-```bash
-agent-browser open "https://nitter.net/search?f=tweets&q=VLA+OR+OpenVLA"
-agent-browser snapshot -i
-```
+### `config/rss-feeds.js`
+- 修改 `defaultHours`: 抓取时间范围（默认 48 小时）
+- 修改 `concurrency`: 并发数（默认 10）
+- 修改 `feeds`: 添加/删除 RSS 源
+
+### `lib/gemini-analyzer.js`
+- 修改 `batchSize`: AI 分析批次大小（默认 3，避免 API 限制）
+- 修改 `CATEGORIES`: 自定义分类体系
 
 ## 注意事项
 
-1. **Reddit**: 有 API 速率限制，建议使用 agent-browser 访问公开 JSON
-2. **Hacker News**: 有官方 API，速率限制较宽松
-3. **Nitter**: 实例不稳定，需要多个备用
-4. **频率建议**: 每 2-4 小时运行一次
+1. **Gemini API**: RSS 博客分析需要配置 `GEMINI_API_KEY`
+2. **API 限制**: Gemini 免费版有速率限制，建议 batchSize ≤ 3
+3. **RSS 稳定性**: 部分博客 RSS 可能不稳定，会自动跳过
+4. **时间范围**: 默认抓取最近 48 小时内容，可调整
 
 ## 更新日志
 
+### v2.0.1 (2026-02-26) - Bug Fix
+- 🐛 修复 Markdown 报告各平台详情截断问题
+- ✅ 各平台详情现在显示完整内容（不再限制前5条）
+- 📄 arXiv、HuggingFace、Reddit、GitHub 等全部条目完整展示
+
+### v2.0.0 (2026-02-15) - Enhanced Edition
+- ✅ 融合 ai-daily-digest RSS 博客监控能力
+- ✅ 集成 Gemini AI 智能评分、分类、摘要
+- ✅ 新增 6 大分类体系
+- ✅ 新增趋势总结和可视化图表
+- ✅ 中文标题翻译和推荐理由
+- ✅ 增强版 Markdown 报告结构
+
 ### v1.0.0 (2026-02-01)
 - 初始版本
-- 支持 5 个数据源
+- 支持 5 个社区数据源
 - 统一热度评分系统
+
+## 致谢
+
+本项目融合并改进了 [ai-daily-digest](https://github.com/vigorX777/ai-daily-digest) 的核心能力，感谢原作者的开源贡献。
